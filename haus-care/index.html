@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HausCare - Professionelle Hausbetreuung</title>
+    <meta name="description" content="Professionelle Hausbetreuung in Berlin. Reinigung, Gartenpflege, Hausverwaltung und 24h Notfalldienst. Kostenlose Beratung!" />
+    <meta name="author" content="HausCare GmbH" />
+
+    <meta property="og:title" content="HausCare - Professionelle Hausbetreuung" />
+    <meta property="og:description" content="Professionelle Hausbetreuung in Berlin. Reinigung, Gartenpflege, Hausverwaltung und 24h Notfalldienst." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <!-- Kontaktformular -->
+    <section style="max-width:400px;margin:2rem auto;padding:1rem;border:1px solid #eee;border-radius:8px;">
+      <h2>Kontaktieren Sie uns</h2>
+      <form action="https://formsubmit.co/bayrak.firatxx@gmail.com" method="POST">
+        <input type="text" name="name" placeholder="Ihr Name" required style="width:100%;margin-bottom:0.5rem;padding:0.5rem;">
+        <input type="email" name="email" placeholder="Ihre E-Mail" required style="width:100%;margin-bottom:0.5rem;padding:0.5rem;">
+        <textarea name="message" placeholder="Ihre Nachricht" required style="width:100%;margin-bottom:0.5rem;padding:0.5rem;"></textarea>
+        <!-- Spam-Schutz -->
+        <input type="text" name="_honey" style="display:none">
+        <!-- Weiterleitung nach dem Absenden -->
+        <input type="hidden" name="_next" value="https://deine-webseite.de/danke.html">
+        <button type="submit" style="width:100%;padding:0.5rem;background:#007bff;color:#fff;border:none;border-radius:4px;">Absenden</button>
+      </form>
+    </section>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

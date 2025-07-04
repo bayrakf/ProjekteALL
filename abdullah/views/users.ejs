@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Benutzerverwaltung</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Benutzerverwaltung</h1>
+    <a href="/dashboard">Zurück zur Übersicht</a>
+    <% if(error && error.length) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    <% if(success && success.length) { %>
+      <p class="success"><%= success %></p>
+    <% } %>
+    <h2>Neuen Benutzer anlegen</h2>
+    <form action="/users/add" method="post">
+      <label>Benutzername:</label>
+      <input type="text" name="username" required />
+      <label>Passwort:</label>
+      <input type="password" name="password" required />
+      <button type="submit">Anlegen</button>
+    </form>
+    <h2>Alle Benutzer</h2>
+    <table>
+      <tr>
+        <th>Benutzername</th>
+        <th>Aktion</th>
+      </tr>
+      <% users.forEach(u => { %>
+        <tr>
+          <td><%= u.username %></td>
+          <td>
+            <form action="/users/delete/<%= u.id %>" method="post" style="display:inline;">
+              <button type="submit" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </table>
+  </div>
+</body>
+</html>

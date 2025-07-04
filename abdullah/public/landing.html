@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdullah - Premium Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a1a, #4a4a4a);
+            color: #fff;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #f0c040;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #f0c040;
+            text-shadow: 0 0 10px rgba(240, 192, 64, 0.8);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: #fff;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            width: 20%;
+            padding: 1rem;
+            text-align: center;
+            color: #fff;
+        }
+
+        .services {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .service-card {
+            width: 30%;
+            padding: 1rem;
+            text-align: center;
+            transition: transform 0.3s;
+            margin-bottom: 2rem;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .footer {
+            background: #111;
+            padding: 2rem;
+            text-align: center;
+            color: #fff;
+        }
+
+        .footer a {
+            color: #f0c040;
+            text-decoration: none;
+        }
+
+        .contact {
+            margin: 4rem auto;
+            padding: 2rem;
+            max-width: 800px;
+        }
+
+        .contact h2 {
+            text-align: center;
+            color: #f0c040;
+            margin-bottom: 2rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            justify-items: center;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: #f0c040;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .contact-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #f0c040;
+            font-size: 1.1rem;
+        }
+
+        .contact-info p {
+            margin: 0;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar glass">
+        <div class="logo">Abdullah</div>
+        <div class="menu">
+            <a href="#hero">Home</a>
+            <a href="#services">Services</a>
+            <a href="#contact">Kontakt</a>
+            <a href="/buchhaltung">Rechner</a>
+        </div>
+    </nav>
+
+    <header class="hero" id="hero">
+        <div>
+            <h1>Abdullah Elektrotechnik</h1>
+            <p>Ihr Experte für innovative Elektrolösungen und nachhaltige Energiesysteme</p>
+            <div style="margin-top: 2rem;">
+                <a href="/buchhaltung" style="background-color: #f0c040; color: #333; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 15px rgba(240, 192, 64, 0.5); transition: all 0.3s ease;">
+                    Zum Rechner
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="stats">
+        <div class="stat-card glass">
+            <h2>15+</h2>
+            <p>Jahre Erfahrung</p>
+        </div>
+        <div class="stat-card glass">
+            <h2>500+</h2>
+            <p>Zufriedene Kunden</p>
+        </div>
+        <div class="stat-card glass">
+            <h2>250+</h2>
+            <p>Photovoltaikanlagen installiert</p>
+        </div>
+    </section>
+
+    <section class="services" id="services">
+        <div class="service-card glass">
+            <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Photovoltaik" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;">
+            <h3>Photovoltaik-Installation</h3>
+            <p>Professionelle Installation von Solaranlagen für nachhaltige Energiegewinnung.</p>
+        </div>
+        <div class="service-card glass">
+            <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Elektroinstallation" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;">
+            <h3>Elektroinstallationen</h3>
+            <p>Komplette Elektroinstallationen für Neu- und Altbauten nach höchsten Standards.</p>
+        </div>
+        <div class="service-card glass">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Smart Home" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;">
+            <h3>Smart Home Lösungen</h3>
+            <p>Moderne Heimautomatisierung für mehr Komfort, Sicherheit und Energieeffizienz.</p>
+        </div>
+    </section>
+
+    <section id="contact" class="contact glass">
+        <h2>Kontakt</h2>
+        <div class="contact-grid">
+            <div class="contact-item">
+                <div class="contact-icon">
+                    📱
+                </div>
+                <div class="contact-info">
+                    <h3>Telefon</h3>
+                    <p>+49 123 456789</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">
+                    ✉️
+                </div>
+                <div class="contact-info">
+                    <h3>E-Mail</h3>
+                    <p>info@abdullah-elektro.de</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">
+                    🏢
+                </div>
+                <div class="contact-info">
+                    <h3>Adresse</h3>
+                    <p>Musterstraße 123, 12345 Musterstadt</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2025 Abdullah Elektrotechnik. Alle Rechte vorbehalten. <a href="#">Datenschutz</a> | <a href="#">Impressum</a></p>
+    </footer>
+</body>
+</html>

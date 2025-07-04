@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Neue Rechnung / Angebot</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container" style="max-width:700px;margin:auto;background:#f8fafc;border-radius:18px;padding:32px 24px;box-shadow:0 8px 32px 0 #0001;">
+    <h1>Neue Rechnung / Angebot</h1>
+    <form action="/invoice/new" method="post" onsubmit="return preparePositionen()">
+      <label>Typ:</label>
+      <select name="typ" required>
+        <option value="Rechnung">Rechnung</option>
+        <option value="Angebot">Angebot</option>
+      </select>
+      <label>Empfänger:</label>
+      <input type="text" name="empfaenger" required />
+      <label>Datum:</label>
+      <input type="date" name="datum" value="<%= new Date().toISOString().slice(0,10) %>" required />
+      <label>Fällig bis:</label>
+      <input type="date" name="faellig" />
+      <label>Positionen (Beschreibung, Menge, Einzelpreis):</label>
+      <div id="positionen-list">
+        <div class="position-row">
+          <input type="text" name="pos_beschreibung[]" placeholder="Beschreibung" required style="width:40%" />
+          <input type="number" name="pos_menge[]" placeholder="Menge" min="1" value="1" required style="width:15%" />
+          <input type="number" name="pos_preis[]" placeholder="Einzelpreis" step="0.01" min="0" required style="width:20%" />
+          <button type="button" onclick="removePos(this)">–</button>
+        </div>
+      </div>
+      <input type="hidden" name="positionen" id="positionen-json" />
+      <button type="button" onclick="addPos()" style="margin:10px 0;">+ Position</button>
+      <label>Bemerkung (optional):</label>
+      <textarea name="bemerkung" rows="2"></textarea>
+      <button type="submit" style="margin-top:18px;">Speichern</button>
+    </form>
+    <div id="invoice-message" style="margin:18px 0 0 0;font-weight:600;"></div>
+    <a href="/dashboard" style="display:inline-block;margin-top:18px;">Zurück zur Übersicht</a>
+  </div>
+  <script>
+    function addPos() {
+      const row = document.createElement('div');
+      row.className = 'position-row';
+      row.innerHTML = `<input type="text" name="pos_beschreibung[]" placeholder="Beschreibung" required style="width:40%" />
+        <input type="number" name="pos_menge[]" placeholder="Menge" min="1" value="1" required style="width:15%" />
+        <input type="number" name="pos_preis[]" placeholder="Einzelpreis" step="0.01" min="0" required style="width:20%" />
+        <button type="button" onclick="removePos(this)">–</button>`;
+      document.getElementById('positionen-list').appendChild(row);
+    }
+    function removePos(btn) {
+      btn.parentNode.remove();
+    }
+    function preparePositionen() {
+      const beschreibungen = Array.from(document.getElementsByName('pos_beschreibung[]')).map(e => e.value.trim());
+      const mengen = Array.from(document.getElementsByName('pos_menge[]')).map(e => e.value);
+      const preise = Array.from(document.getElementsByName('pos_preis[]')).map(e => e.value);
+      const posArr = [];
+      for (let i = 0; i < beschreibungen.length; i++) {
+        if (beschreibungen[i] && mengen[i] && preise[i]) {
+          posArr.push({ beschreibung: beschreibungen[i], menge: mengen[i], preis: preise[i] });
+        }
+      }
+      document.getElementById('positionen-json').value = JSON.stringify(posArr);
+      return true;
+    }
+
+    // AJAX-Submit für das Formular
+    document.querySelector('form[action="/invoice/new"]').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if(!preparePositionen()) return;
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = {};
+      formData.forEach((v, k) => data[k] = v);
+      const msg = document.getElementById('invoice-message');
+      msg.textContent = '';
+      try {
+        const res = await fetch('/invoice/new', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if(res.ok) {
+          msg.style.color = '#22c55e';
+          msg.textContent = 'Rechnung/Angebot erfolgreich gespeichert!';
+          form.reset();
+          document.getElementById('positionen-list').innerHTML = `<div class="position-row">
+            <input type="text" name="pos_beschreibung[]" placeholder="Beschreibung" required style="width:40%" />
+            <input type="number" name="pos_menge[]" placeholder="Menge" min="1" value="1" required style="width:15%" />
+            <input type="number" name="pos_preis[]" placeholder="Einzelpreis" step="0.01" min="0" required style="width:20%" />
+            <button type="button" onclick="removePos(this)">–</button>
+          </div>`;
+        } else {
+          const err = await res.text();
+          msg.style.color = '#dc2626';
+          msg.textContent = 'Fehler beim Speichern: ' + err;
+        }
+      } catch(err) {
+        msg.style.color = '#dc2626';
+        msg.textContent = 'Fehler beim Speichern: ' + err;
+      }
+    });
+  </script>
+</body>
+</html>

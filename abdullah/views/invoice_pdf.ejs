@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= invoice.typ %> <%= invoice.rechnungsnummer %></title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #222; margin: 0; padding: 0; }
+    .pdf-container { max-width: 700px; margin: 0 auto; background: #fff; padding: 32px 32px 24px 32px; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5em; }
+    .meta { margin-bottom: 1.2em; }
+    .meta td { padding: 2px 8px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1.5em; }
+    th, td { border: 1px solid #e5e7eb; padding: 7px 10px; }
+    th { background: #f3f4f6; }
+    .right { text-align: right; }
+    .footer { margin-top: 2em; font-size: 0.95em; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="pdf-container">
+    <h1><%= invoice.typ %> <%= invoice.rechnungsnummer %></h1>
+    <table class="meta">
+      <tr><td><b>Empfänger:</b></td><td><%= invoice.empfaenger %></td></tr>
+      <tr><td><b>Datum:</b></td><td><%= invoice.datum %></td></tr>
+      <tr><td><b>Fällig bis:</b></td><td><%= invoice.faellig %></td></tr>
+      <tr><td><b>Status:</b></td><td><%= invoice.status %></td></tr>
+    </table>
+    <table>
+      <tr>
+        <th>Beschreibung</th>
+        <th>Menge</th>
+        <th>Einzelpreis (€)</th>
+        <th>Gesamt (€)</th>
+      </tr>
+      <% JSON.parse(invoice.positionen).forEach(pos => { %>
+      <tr>
+        <td><%= pos.beschreibung %></td>
+        <td class="right"><%= pos.menge %></td>
+        <td class="right"><%= Number(pos.preis).toFixed(2) %></td>
+        <td class="right"><%= (Number(pos.menge) * Number(pos.preis)).toFixed(2) %></td>
+      </tr>
+      <% }) %>
+      <tr>
+        <td colspan="3" class="right"><b>Nettosumme</b></td>
+        <td class="right"><%= Number(invoice.netto).toFixed(2) %></td>
+      </tr>
+      <tr>
+        <td colspan="3" class="right"><b>19% MwSt</b></td>
+        <td class="right"><%= Number(invoice.mwst).toFixed(2) %></td>
+      </tr>
+      <tr>
+        <td colspan="3" class="right"><b>Bruttosumme</b></td>
+        <td class="right"><%= Number(invoice.brutto).toFixed(2) %></td>
+      </tr>
+    </table>
+    <% if(invoice.bemerkung) { %>
+      <div style="margin-bottom:1em;"><b>Bemerkung:</b> <%= invoice.bemerkung %></div>
+    <% } %>
+    <div class="footer">Diese <%= invoice.typ.toLowerCase() %> wurde automatisch erstellt. Vielen Dank für Ihr Vertrauen!</div>
+  </div>
+</body>
+</html>

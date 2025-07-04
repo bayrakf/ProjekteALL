@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdullah - Willkommen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a1a, #4a4a4a);
+            color: #fff;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #f0c040;
+            text-shadow: 0 0 10px rgba(240, 192, 64, 0.8);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: #fff;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #f0c040;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar glass">
+        <div class="logo">Abdullah</div>
+        <div class="menu">
+            <a href="/">Landing Page</a>
+            <a href="/buchhaltung">Rechner</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div>
+            <h1>Willkommen bei Abdullah Elektrotechnik</h1>
+            <p>Innovative Lösungen für Ihre elektrischen Bedürfnisse</p>
+        </div>
+    </header>
+</body>
+</html>
