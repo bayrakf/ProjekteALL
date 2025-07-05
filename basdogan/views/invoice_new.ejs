@@ -62,45 +62,9 @@
         }
       }
       document.getElementById('positionen-json').value = JSON.stringify(posArr);
-      return true;
+      console.log("Positionen vorbereitet:", posArr); // Debugging
+      return posArr.length > 0;
     }
-
-    // AJAX-Submit für das Formular
-    document.querySelector('form[action="/invoice/new"]').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      if(!preparePositionen()) return;
-      const form = e.target;
-      const formData = new FormData(form);
-      const data = {};
-      formData.forEach((v, k) => data[k] = v);
-      const msg = document.getElementById('invoice-message');
-      msg.textContent = '';
-      try {
-        const res = await fetch('/invoice/new', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if(res.ok) {
-          msg.style.color = '#22c55e';
-          msg.textContent = 'Rechnung/Angebot erfolgreich gespeichert!';
-          form.reset();
-          document.getElementById('positionen-list').innerHTML = `<div class="position-row">
-            <input type="text" name="pos_beschreibung[]" placeholder="Beschreibung" required style="width:40%" />
-            <input type="number" name="pos_menge[]" placeholder="Menge" min="1" value="1" required style="width:15%" />
-            <input type="number" name="pos_preis[]" placeholder="Einzelpreis" step="0.01" min="0" required style="width:20%" />
-            <button type="button" onclick="removePos(this)">–</button>
-          </div>`;
-        } else {
-          const err = await res.text();
-          msg.style.color = '#dc2626';
-          msg.textContent = 'Fehler beim Speichern: ' + err;
-        }
-      } catch(err) {
-        msg.style.color = '#dc2626';
-        msg.textContent = 'Fehler beim Speichern: ' + err;
-      }
-    });
   </script>
 </body>
 </html>

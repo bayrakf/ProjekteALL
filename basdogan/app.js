@@ -37,6 +37,7 @@ cron.schedule('0 3 * * *', backupDatabase);
 
 // Middleware-Reihenfolge: bodyParser, Session, Flash VOR allen Routen!
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // JSON-Middleware hinzufügen für AJAX-Requests
 app.use(
   session({
     secret: "buchhaltungSecret2024",
@@ -62,18 +63,68 @@ app.get("/invoice/new", requireLogin, (req, res) => {
 // POST-Route: Neue Rechnung/Angebot speichern
 app.post("/invoice/new", requireLogin, (req, res) => {
   const { typ, empfaenger, datum, faellig, positionen, status, bemerkung } = req.body;
+  console.log("Empfangene Daten:", req.body); // Debugging: Eingehende Daten anzeigen
+  console.log("Content-Type:", req.headers['content-type']); // Debugging: Content-Type prüfen
+
   let posArr;
-  if (!positionen || typeof positionen !== "string" || positionen.trim() === "") {
+  
+  // Prüfen ob positionen bereits ein Array ist (JSON-Request) oder ein String (Form-Request)
+  if (Array.isArray(positionen)) {
+    posArr = positionen;
+  } else if (typeof positionen === "string" && positionen.trim() !== "") {
+    try {
+      posArr = JSON.parse(positionen);
+      if (!Array.isArray(posArr)) posArr = [posArr];
+    } catch (e) {
+      console.error("Fehler beim Parsen von Positionen:", e); // Debugging: Fehler anzeigen
+      if (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
+        return res.status(400).json({ error: "Positionen-Format ungültig!" });
+      }
+      req.flash("error", "Positionen-Format ungültig! (Tipp: Positionen als Tabelle ausfüllen)");
+      return res.redirect("/invoice/new");
+    }
+  } else {
+    // Fallback: Aus einzelnen Feldern zusammenbauen (falls Form-Daten)
+    const beschreibungen = req.body['pos_beschreibung[]'] || req.body.pos_beschreibung;
+    const mengen = req.body['pos_menge[]'] || req.body.pos_menge;
+    const preise = req.body['pos_preis[]'] || req.body.pos_preis;
+    
+    console.log("Fallback-Felder:", { beschreibungen, mengen, preise }); // Debugging
+    
+    if (beschreibungen && mengen && preise) {
+      const beschArray = Array.isArray(beschreibungen) ? beschreibungen : [beschreibungen];
+      const mengeArray = Array.isArray(mengen) ? mengen : [mengen];
+      const preisArray = Array.isArray(preise) ? preise : [preise];
+      
+      console.log("Arrays:", { beschArray, mengeArray, preisArray }); // Debugging
+      
+      posArr = [];
+      for (let i = 0; i < beschArray.length; i++) {
+        if (beschArray[i] && beschArray[i].trim() && mengeArray[i] && preisArray[i]) {
+          posArr.push({
+            beschreibung: beschArray[i].trim(),
+            menge: mengeArray[i],
+            preis: preisArray[i]
+          });
+        }
+      }
+      console.log("Erstelltes posArr:", posArr); // Debugging
+    } else {
+      console.log("Keine Fallback-Felder gefunden"); // Debugging
+    }
+  }
+
+  if (!posArr || !Array.isArray(posArr) || posArr.length === 0) {
+    console.error("Fehler: Positionen fehlen oder sind leer."); // Debugging: Fehler anzeigen
+    if (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
+      return res.status(400).json({ error: "Mindestens eine Position muss angegeben werden!" });
+    }
     req.flash("error", "Mindestens eine Position muss angegeben werden!");
     return res.redirect("/invoice/new");
   }
-  try {
-    posArr = JSON.parse(positionen);
-    if (!Array.isArray(posArr)) posArr = [posArr];
-  } catch (e) {
-    req.flash("error", "Positionen-Format ungültig! (Tipp: Positionen als Tabelle ausfüllen)");
-    return res.redirect("/invoice/new");
-  }
+
+  console.log("Verarbeitete Positionen:", posArr); // Debugging: Verarbeitete Positionen anzeigen
+
   // Fälligkeitsdatum: Wenn leer, Standard = 14 Tage nach Rechnungsdatum
   let faelligVal = faellig;
   if (!faelligVal || faelligVal.trim() === "") {
@@ -81,10 +132,16 @@ app.post("/invoice/new", requireLogin, (req, res) => {
     d.setDate(d.getDate() + 14);
     faelligVal = d.toISOString().slice(0, 10);
   }
+
   if (!typ || !empfaenger || !datum || !Array.isArray(posArr) || posArr.length === 0) {
+    console.error("Fehler: Pflichtfelder fehlen."); // Debugging: Fehler anzeigen
+    if (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
+      return res.status(400).json({ error: "Alle Pflichtfelder müssen ausgefüllt sein!" });
+    }
     req.flash("error", "Alle Pflichtfelder müssen ausgefüllt sein!");
     return res.redirect("/invoice/new");
   }
+
   // Automatische Berechnung: netto, mwst, brutto (19% MwSt Standard)
   let netto = 0;
   posArr.forEach(p => {
@@ -95,11 +152,17 @@ app.post("/invoice/new", requireLogin, (req, res) => {
   const mwstSatz = 0.19;
   const mwst = Math.round(netto * mwstSatz * 100) / 100;
   const brutto = Math.round((netto + mwst) * 100) / 100;
+
   const year = datum.split("-")[0];
   db.get(
     `SELECT COUNT(*) as count FROM invoices WHERE datum LIKE ?`,
     [`${year}%`],
     (err, row) => {
+      if (err) {
+        console.error("Fehler bei der Datenbankabfrage:", err); // Debugging: Fehler anzeigen
+        req.flash("error", "Fehler beim Speichern der Rechnung.");
+        return res.redirect("/invoice/new");
+      }
       const num = (row.count + 1).toString().padStart(4, "0");
       const rechnungsnummer = `RECH-${year}${datum.replace(/-/g, "").slice(4)}-${num}`;
       db.run(
@@ -120,11 +183,19 @@ app.post("/invoice/new", requireLogin, (req, res) => {
         ],
         (err2) => {
           if (err2) {
+            console.error("Fehler beim Speichern in der Datenbank:", err2); // Debugging: Fehler anzeigen
+            if (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
+              return res.status(500).json({ error: "Fehler beim Speichern: " + (err2.message || err2) });
+            }
             req.flash("error", "Fehler beim Speichern: " + (err2.message || err2));
             return res.redirect("/invoice/new");
           }
-          req.flash("success", "Rechnung/Angebot gespeichert!");
-          res.redirect("/dashboard");
+          if (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
+            res.json({ success: true, message: "Rechnung/Angebot gespeichert!" });
+          } else {
+            req.flash("success", "Rechnung/Angebot gespeichert!");
+            res.redirect("/dashboard");
+          }
         }
       );
     }
@@ -961,8 +1032,13 @@ app.get("/invoices/table", requireLogin, (req, res) => {
   );
 });
 
-// Serve the landing page
+// Serve the main website
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Serve the old landing page
+app.get('/landing', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'landing.html'));
 });
 

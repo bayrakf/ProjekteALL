@@ -344,8 +344,8 @@
           <td style="text-align:right;"><%= Number(entry.netto_betrag || entry.betrag).toFixed(2) %></td>
           <td><%= entry.tags || '-' %></td>
           <td>
-            <% if(entry.beleg_pfad) { %>
-              <a href="/uploads/<%= entry.beleg_pfad %>" target="_blank" style="color:#3b82f6; text-decoration: none;">📎 Anzeigen</a>
+            <% if(entry.beleg) { %>
+              <a href="/beleg/<%= entry.beleg %>" target="_blank" style="color:#3b82f6; text-decoration: none;">📎 Anzeigen</a>
             <% } else { %>
               -
             <% } %>
@@ -1040,7 +1040,7 @@
                 </div>
               </div>
 
-              <div style="background:rgba(245, 158, 11, 0.1);border:1px solid rgba(245,158, 11, 0.3);border-radius:8px;padding:16px;margin-bottom:20px;">
+              <div style="background:rgba(245,  158, 11, 0.1);border:1px solid rgba(245,158, 11, 0.3);border-radius:8px;padding:16px;margin-bottom:20px;">
                 <div style="color:#f59e0b;font-weight:600;margin-bottom:8px;">ℹ️ Export-Hinweise:</div>
                 <ul style="color:#fff;margin:0;padding-left:20px;line-height:1.6;">
                   <li>Alle Buchungen werden automatisch in DATEV-konforme Formate konvertiert</li>
@@ -1389,6 +1389,47 @@
       </div>
     </div>
 
+    <!-- MODAL: Rechnung/Angebot bearbeiten -->
+    <div class="modal-overlay" id="edit-invoice-modal-overlay"></div>
+    <div class="modal" id="edit-invoice-modal">
+      <div class="modal-header">
+        <h3>Rechnung/Angebot bearbeiten</h3>
+        <button class="modal-close" onclick="closeModal('edit-invoice-modal')">×</button>
+        <div class="modal-resizer"></div>
+      </div>
+      <div class="modal-content">
+        <form onsubmit="event.preventDefault(); saveEditInvoice();">
+          <input type="hidden" id="edit-invoice-id" />
+          
+          <label>Typ:</label>
+          <select id="edit-typ" required>
+            <option value="Rechnung">Rechnung</option>
+            <option value="Angebot">Angebot</option>
+          </select>
+          
+          <label>Empfänger:</label>
+          <input type="text" id="edit-empfaenger" required />
+          
+          <label>Datum:</label>
+          <input type="date" id="edit-datum" required />
+          
+          <label>Fällig bis:</label>
+          <input type="date" id="edit-faellig" />
+          
+          <label>Positionen:</label>
+          <div id="edit-positionen-list">
+            <!-- Positionen werden hier dynamisch eingefügt -->
+          </div>
+          <button type="button" onclick="addEditPos()" style="margin:10px 0;">+ Position</button>
+          
+          <label>Bemerkung:</label>
+          <textarea id="edit-bemerkung" rows="2"></textarea>
+          
+          <button type="submit" style="margin-top:18px;">Speichern</button>
+        </form>
+      </div>
+    </div>
+
     <script>
     // Initialisiere Modal-System
     document.addEventListener('DOMContentLoaded', function() {
@@ -1443,6 +1484,16 @@
         document.querySelector('#crm-modal .modal-resizer')
       );
 
+      modalManager.makeDraggable(
+        document.getElementById('edit-invoice-modal'),
+        document.querySelector('#edit-invoice-modal .modal-header')
+      );
+      
+      modalManager.makeResizable(
+        document.getElementById('edit-invoice-modal'),
+        document.querySelector('#edit-invoice-modal .modal-resizer')
+      );
+
       // Setup Event-Listeners für Overlay-Clicks
       document.getElementById('invoice-new-modal-overlay').addEventListener('click', function(e) {
         if (e.target === this) closeModal('invoice-new-modal');
@@ -1464,9 +1515,11 @@
         if (e.target === this) closeModal('crm-modal');
       });
 
-      // Setup Rechnungsübersicht
-      setupInvoiceTableActions();
-      showInvoicesTab('rechnung');
+      document.getElementById('edit-invoice-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal('edit-invoice-modal');
+      });
+
+      // ...existing code...
     });
 
     // Modal-Formular: Positionen dynamisch
@@ -1570,3 +1623,227 @@
         btn.classList.remove('active');
         btn.style.background = 'rgba(255, 255, 255, 0.1)';
         btn.style.color = '#f0c040';
+      });
+      
+      // Aktiven Tab anzeigen
+      document.getElementById(`tax-content-${tabName}`).style.display = 'block';
+      
+      // Aktiven Button stylen
+      const activeButton = document.getElementById(`tab-${tabName}`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+        activeButton.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+        activeButton.style.color = '#fff';
+      }
+    }
+
+    // Kunden-Modal Funktionen
+    function showCRMTab(tabName) {
+      // Alle Tabs verstecken
+      document.querySelectorAll('.crm-tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      
+      // Alle Tab-Buttons deaktivieren
+      document.querySelectorAll('#crm-modal .tab-button').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.background = 'rgba(255, 255, 255, 0.1)';
+        btn.style.color = '#f0c040';
+      });
+      
+      // Aktiven Tab anzeigen
+      document.getElementById(`crm-content-${tabName}`).style.display = 'block';
+      
+      // Aktiven Button stylen
+      const activeButton = document.getElementById(`tab-${tabName}`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+        activeButton.style.background = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+        activeButton.style.color = '#fff';
+      }
+    }
+
+    // Setup Event-Handler für Rechnungsübersicht-Aktionen
+    function setupInvoiceTableActions() {
+      console.log('Setting up invoice table actions...');
+      
+      // Event-Delegation für dynamisch geladene Buttons
+      document.addEventListener('click', function(e) {
+        console.log('Click detected on:', e.target);
+        
+        // PDF-Button
+        if (e.target.closest('.btn-pdf')) {
+          e.preventDefault();
+          const btn = e.target.closest('.btn-pdf');
+          const id = btn.dataset.id;
+          console.log('PDF button clicked for ID:', id);
+          if (id) {
+            window.open(`/invoice/${id}/pdf`, '_blank');
+          }
+          return;
+        }
+        
+        // Bearbeiten-Button
+        if (e.target.closest('.btn-edit-invoice')) {
+          e.preventDefault();
+          const btn = e.target.closest('.btn-edit-invoice');
+          const id = btn.dataset.id;
+          console.log('Edit button clicked for ID:', id);
+          if (id) {
+            editInvoice(id);
+          }
+          return;
+        }
+        
+        // Löschen-Button
+        if (e.target.closest('.btn-delete-invoice')) {
+          e.preventDefault();
+          const btn = e.target.closest('.btn-delete-invoice');
+          const id = btn.dataset.id;
+          console.log('Delete button clicked for ID:', id);
+          if (id) {
+            deleteInvoice(id);
+          }
+          return;
+        }
+      });
+      
+      console.log('Invoice table actions setup complete');
+    }
+
+    // Rechnung bearbeiten
+    function editInvoice(id) {
+      fetch(`/invoice/${id}/edit`)
+        .then(response => response.json())
+        .then(invoice => {
+          // Modal mit Daten füllen
+          document.getElementById('edit-invoice-id').value = id;
+          document.getElementById('edit-typ').value = invoice.typ;
+          document.getElementById('edit-empfaenger').value = invoice.empfaenger;
+          document.getElementById('edit-datum').value = invoice.datum;
+          document.getElementById('edit-faellig').value = invoice.faellig;
+          document.getElementById('edit-bemerkung').value = invoice.bemerkung || '';
+          
+          // Positionen laden
+          const positionen = JSON.parse(invoice.positionen);
+          const container = document.getElementById('edit-positionen-list');
+          container.innerHTML = '';
+          
+          positionen.forEach(pos => {
+            const row = document.createElement('div');
+            row.className = 'position-row';
+            row.innerHTML = `
+              <input type="text" name="edit_pos_beschreibung[]" value="${pos.beschreibung}" required style="width:40%" />
+              <input type="number" name="edit_pos_menge[]" value="${pos.menge}" min="1" required style="width:15%" />
+              <input type="number" name="edit_pos_preis[]" value="${pos.preis}" step="0.01" min="0" required style="width:20%" />
+              <button type="button" onclick="removeEditPos(this)" style="background:#ef4444; padding:8px 12px; border:none; border-radius:5px; color:#fff; cursor:pointer;">–</button>
+            `;
+            container.appendChild(row);
+          });
+          
+          // Modal öffnen
+          openModal('edit-invoice-modal');
+        })
+        .catch(error => {
+          console.error('Fehler beim Laden der Rechnung:', error);
+          alert('Fehler beim Laden der Rechnung');
+        });
+    }
+
+    // Rechnung löschen
+    function deleteInvoice(id) {
+      if (confirm('Möchten Sie diese Rechnung/Angebot wirklich löschen?')) {
+        fetch(`/invoice/${id}/delete`, { method: 'POST' })
+          .then(response => {
+            if (response.ok) {
+              // Zeile aus Tabelle entfernen
+              const row = document.querySelector(`[data-id="${id}"]`).closest('tr');
+              if (row) row.remove();
+              alert('Rechnung/Angebot wurde gelöscht');
+            } else {
+              alert('Fehler beim Löschen');
+            }
+          })
+          .catch(error => {
+            console.error('Fehler beim Löschen:', error);
+            alert('Fehler beim Löschen');
+          });
+      }
+    }
+
+    // Hilfsfunktionen für Bearbeiten-Modal
+    function addEditPos() {
+      const row = document.createElement('div');
+      row.className = 'position-row';
+      row.innerHTML = `
+        <input type="text" name="edit_pos_beschreibung[]" placeholder="Beschreibung" required style="width:40%" />
+        <input type="number" name="edit_pos_menge[]" placeholder="Menge" min="1" value="1" required style="width:15%" />
+        <input type="number" name="edit_pos_preis[]" placeholder="Einzelpreis" step="0.01" min="0" required style="width:20%" />
+        <button type="button" onclick="removeEditPos(this)" style="background:#ef4444; padding:8px 12px; border:none; border-radius:5px; color:#fff; cursor:pointer;">–</button>
+      `;
+      document.getElementById('edit-positionen-list').appendChild(row);
+    }
+
+    function removeEditPos(btn) {
+      btn.parentNode.remove();
+    }
+
+    function saveEditInvoice() {
+      const id = document.getElementById('edit-invoice-id').value;
+      const typ = document.getElementById('edit-typ').value;
+      const empfaenger = document.getElementById('edit-empfaenger').value;
+      const datum = document.getElementById('edit-datum').value;
+      const faellig = document.getElementById('edit-faellig').value;
+      const bemerkung = document.getElementById('edit-bemerkung').value;
+
+      // Positionen sammeln
+      const beschreibungen = Array.from(document.querySelectorAll('[name="edit_pos_beschreibung[]"]')).map(e => e.value.trim());
+      const mengen = Array.from(document.querySelectorAll('[name="edit_pos_menge[]"]')).map(e => e.value);
+      const preise = Array.from(document.querySelectorAll('[name="edit_pos_preis[]"]')).map(e => e.value);
+      
+      const positionen = [];
+      for (let i = 0; i < beschreibungen.length; i++) {
+        if (beschreibungen[i] && mengen[i] && preise[i]) {
+          positionen.push({
+            beschreibung: beschreibungen[i],
+            menge: mengen[i],
+            preis: preise[i]
+          });
+        }
+      }
+
+      const data = {
+        typ,
+        empfaenger,
+        datum,
+        faellig,
+        positionen: JSON.stringify(positionen),
+        bemerkung
+      };
+
+      fetch(`/invoice/${id}/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          alert('Rechnung/Angebot wurde gespeichert');
+          closeModal('edit-invoice-modal');
+          // Tabelle neu laden
+          location.reload();
+        } else {
+          alert('Fehler beim Speichern: ' + (result.error || 'Unbekannter Fehler'));
+        }
+      })
+      .catch(error => {
+        console.error('Fehler beim Speichern:', error);
+        alert('Fehler beim Speichern');
+      });
+    }
+
+    // ...existing code...
+    </script>
+</body>
+</html>

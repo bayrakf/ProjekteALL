@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E & B Team Hausbetreuung KG | Reinigungsunternehmen Wien</title>
+    
+    <!-- Meta Tags für SEO -->
+    <meta name="description" content="Reinigungsunternehmen in Wien, spezialisiert auf die Reinigung von Gebäuden. Hausbetreuung, Winterdienst, Gartenpflege - Ein Partner dem Sie voll vertrauen können.">
+    <meta name="keywords" content="Hausbetreuung Wien, Reinigungsunternehmen, Gebäudereinigung, Winterdienst, Gartenpflege, Hausmeister Service">
+    <meta name="author" content="E & B Team Hausbetreuung KG">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eb-teamhausbetreuung.at/">
+    <meta property="og:title" content="E & B Team Hausbetreuung | Premium Facility Management Wien">
+    <meta property="og:description" content="Professionelle Hausbetreuung & Facility Management in Wien. Ihr vertrauensvoller Partner für Immobilien.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #f59e0b;
+            --accent: #10b981;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --white: #ffffff;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-hero: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+            --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-xl: 0 35px 60px -12px rgba(0, 0, 0, 0.35);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* Logo Float Animation */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Logo Glow Animation */
+        @keyframes logoGlow {
+            0%, 100% {
+                filter: drop-shadow(0 10px 30px rgba(135, 206, 235, 0.4));
+            }
+            50% {
+                filter: drop-shadow(0 15px 40px rgba(135, 206, 235, 0.6));
+            }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar.scrolled {
+            background: rgba(30, 41, 59, 0.98);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.4s ease;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-logo:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-logo-image {
+            width: 60px;
+            height: 60px;
+            transition: all 0.4s ease;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px;
+        }
+
+        .nav-logo:hover .nav-logo-image {
+            transform: scale(1.15) rotate(8deg);
+            filter: drop-shadow(0 8px 24px rgba(135, 206, 235, 0.4));
+        }
+
+        .nav-logo-text {
+            background: linear-gradient(135deg, #87ceeb 0%, #f59e0b 50%, #90c695 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.4s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-logo:hover .nav-logo-text {
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, #5a9fd4 0%, #ea580c 50%, #7bb77f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 4px;
+        }
+
+        .nav-toggle span {
+            width: 25px;
+            height: 3px;
+            background: var(--white);
+            transition: all 0.3s ease;
+        }
+
+        .cta-button {
+            background: var(--gradient-accent);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background: var(--gradient-hero);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff02" points="0,1000 1000,0 1000,1000"/></svg>');
+            opacity: 0.1;
+        }
+
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-content .highlight {
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--gradient-accent);
+            color: var(--white);
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--white);
+            padding: 16px 32px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+        }
+
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-image {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+            transition: all 0.5s ease;
+        }
+
+        .hero-image:hover {
+            transform: perspective(1000px) rotateY(-2deg) rotateX(2deg) scale(1.02);
+        }
+
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-element-1 {
+            top: 10%;
+            right: 10%;
+            animation-delay: -1s;
+        }
+
+        .floating-element-2 {
+            bottom: 20%;
+            left: 5%;
+            animation-delay: -3s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Services Section */
+        .services {
+            padding: 8rem 0;
+            background: var(--light);
+            position: relative;
+        }
+
+        .services::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, var(--darker), transparent);
+            opacity: 0.1;
+        }
+
+        .section-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-subtitle {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .section-description {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .service-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 2rem;
+            color: var(--white);
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1) rotateY(360deg);
+        }
+
+        .service-card h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .service-card p {
+            color: var(--gray);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .service-features {
+            list-style: none;
+            text-align: left;
+        }
+
+        .service-features li {
+            color: var(--gray);
+            padding: 0.5rem 0;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .service-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* About Section */
+        .about {
+            padding: 8rem 0;
+            background: var(--white);
+        }
+
+        .about-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-content h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 2rem;
+            line-height: 1.3;
+        }
+
+        .about-content p {
+            font-size: 1.1rem;
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+            background: var(--light);
+            border-radius: 15px;
+        }
+
+        .stat-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .about-visual {
+            position: relative;
+        }
+
+        .about-image {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 8rem 0;
+            background: var(--gradient-hero);
+            color: var(--white);
+        }
+
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .contact-info h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            line-height: 1.3;
+        }
+
+        .contact-info p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            line-height: 1.8;
+            margin-bottom: 3rem;
+        }
+
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .contact-item i {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .contact-form {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-submit {
+            background: var(--gradient-accent);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--darker);
+            color: var(--white);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            line-height: 1.8;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .nav-toggle {
+                display: flex;
+            }
+
+            .hero-container,
+            .about-container,
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero {
+                text-align: center;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <img src="/logo-final.svg" alt="E&B Team Hausbetreuung Logo" class="nav-logo-image">
+                <span class="nav-logo-text">E&B Team</span>
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#about" class="nav-link">Über uns</a></li>
+                <li><a href="#contact" class="nav-link">Kontakt</a></li>
+                <li><a href="/login" class="cta-button">Login</a></li>
+            </ul>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content fade-in">
+                <!-- Prominentes Logo im Hero-Bereich -->
+                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;">
+                    <img src="/logo-final.svg" alt="E&B Team Hausbetreuung" style="width: 120px; height: 120px; animation: float 3s ease-in-out infinite, logoGlow 4s ease-in-out infinite;">
+                </div>
+                <h1>Wir sind Ihr <span class="highlight">Reinigungsunternehmen in Wien</span>, spezialisiert auf die Reinigung von Gebäuden!</h1>
+                <p>Ein Partner dem Sie voll und ganz vertrauen können! Damit sich die Eigentümer und Mieter in Ihrer Immobilie – egal ob es sich um Wohnungen oder gewerblich genutzte Flächen handelt – rundum wohlfühlen können, gibt es die Hausbetreuung für Sie.</p>
+                <div class="hero-stats" style="display: flex; gap: 2rem; margin: 2rem 0; justify-content: center; flex-wrap: wrap;">
+                    <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 12px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 2rem; font-weight: 800; color: #f0c040;">15+</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Jahre Erfahrung</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 12px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 2rem; font-weight: 800; color: #f0c040;">500+</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Betreute Immobilien</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 12px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 2rem; font-weight: 800; color: #f0c040;">100%</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Kundenzufriedenheit</div>
+                    </div>
+                </div>
+                <div class="hero-buttons">
+                    <a href="#services" class="btn-primary">
+                        <i class="fas fa-broom"></i>
+                        Unsere Services
+                    </a>
+                    <a href="#contact" class="btn-secondary">
+                        <i class="fas fa-phone"></i>
+                        Kostenlose Beratung
+                    </a>
+                </div>
+            </div>
+            <div class="hero-visual slide-in-right">
+                <img src="/hero-home.jpg" alt="Professionelle Hausbetreuung" class="hero-image">
+                <div class="floating-element floating-element-1">
+                    <i class="fas fa-shield-alt" style="color: var(--accent); font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                    <strong>100% Zuverlässig</strong>
+                </div>
+                <div class="floating-element floating-element-2">
+                    <i class="fas fa-award" style="color: var(--secondary); font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                    <strong>Premium Qualität</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services" style="position: relative;">
+        <!-- Subtiles Hintergrund-Logo -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; z-index: 0; pointer-events: none;">
+            <img src="/logo-final.svg" alt="" style="width: 400px; height: 400px;">
+        </div>
+        
+        <div class="section-container" style="position: relative; z-index: 1;">
+            <div class="section-header fade-in">
+                <div class="section-subtitle">Unsere Services</div>
+                <h2 class="section-title">Professionelle Hausbetreuung für Ihre Immobilie</h2>
+                <p class="section-description">Von der täglichen Reinigung bis zum Winterdienst – wir bieten Ihnen umfassende Betreuung aus einer Hand. Ihre Liegenschaft wird einem erfahrenen Betreuer langfristig zugewiesen.</p>
+            </div>
+            
+            <div class="services-grid">
+                <div class="service-card fade-in" style="background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(22,163,74,0.05)); border: 1px solid rgba(34,197,94,0.2);">
+                    <div class="service-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3>Professionelle Hausbetreuung</h3>
+                    <p>Umfassende Betreuung Ihrer Immobilie mit regelmäßigen Kontrollen und professioneller Reinigung für Wohnungen und gewerblich genutzte Flächen.</p>
+                    <ul class="service-features">
+                        <li>Langfristige Betreuerzuordnung</li>
+                        <li>Regelmäßige Objektkontrolle</li>
+                        <li>Professionelle Gebäudereinigung</li>
+                        <li>Hochwertige Reinigungsmittel</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(34,197,94,0.1); border-radius: 8px; text-align: center; font-weight: 600; color: #22c55e;">
+                        ✨ Premium-Qualität garantiert
+                    </div>
+                </div>
+
+                <div class="service-card fade-in" style="background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(29,78,216,0.05)); border: 1px solid rgba(59,130,246,0.2);">
+                    <div class="service-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    <h3>Professioneller Winterdienst</h3>
+                    <p>Haben Sie keine Lust frühmorgens aufzustehen? Wir nehmen Ihnen die unliebsame Aufgabe der Schneeräumung ab - prompt, sicher und zuverlässig.</p>
+                    <ul class="service-features">
+                        <li>Schneeräumung ab 4:00 Uhr</li>
+                        <li>Professionelles Streuen</li>
+                        <li>Eis- und Schneebeseitigung</li>
+                        <li>24/7 Bereitschaftsdienst</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(59,130,246,0.1); border-radius: 8px; text-align: center; font-weight: 600; color: #3b82f6;">
+                        ❄️ Winterservice garantiert
+                    </div>
+                </div>
+
+                <div class="service-card fade-in" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05)); border: 1px solid rgba(16,185,129,0.2);">
+                    <div class="service-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3>Außen- und Gartenpflege</h3>
+                    <p>Zu einem schönen Anwesen zählt auch ein gepflegter Garten. Wir pflegen Ihre Grünflächen und sorgen für ein gepflegtes Gesamtbild.</p>
+                    <ul class="service-features">
+                        <li>Rasenmähen & Rasenpflege</li>
+                        <li>Unkrautentfernung</li>
+                        <li>Gehwegreinigung</li>
+                        <li>Saisonale Gartenpflege</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(16,185,129,0.1); border-radius: 8px; text-align: center; font-weight: 600; color: #10b981;">
+                        🌱 Ganzjährige Pflege
+                    </div>
+                </div>
+
+                <div class="service-card fade-in" style="background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(217,119,6,0.05)); border: 1px solid rgba(245,158,11,0.2);">
+                    <div class="service-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3>Hausmeister-Service</h3>
+                    <p>Kompetente Wartung und kleinere Reparaturen für den reibungslosen Betrieb Ihrer Immobilie. Wir kümmern uns um alles!</p>
+                    <ul class="service-features">
+                        <li>Kleine Reparaturen</li>
+                        <li>Präventive Wartungsarbeiten</li>
+                        <li>Technische Kontrollen</li>
+                        <li>Schnelle Problemlösung</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(245,158,11,0.1); border-radius: 8px; text-align: center; font-weight: 600; color: #f59e0b;">
+                        🔧 Alles aus einer Hand
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="section-container">
+            <div class="about-container">
+                <div class="about-content slide-in-left">
+                    <h2>Warum E & B Team Hausbetreuung wählen?</h2>
+                    <p>Wir erstellen gerne auch für Ihre Liegenschaft den optimalen Reinigungsplan und bieten Ihnen diese Leistungen zu konkurrenzlos günstigen Preisen an.</p>
+                    <p>Eines haben alle unsere Leistungspakete gemeinsam: Ihre Liegenschaft wird einem erfahrenen Betreuer langfristig zugewiesen - regelmäßige Kontrollen der Reinigung - Wir verwenden hochwertige Reinigungsmittel von renommierten Anbietern - deutliche Kostenersparnis möglich.</p>
+                    
+                    <!-- Premium Features Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                        <div style="background: rgba(16,185,129,0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(16,185,129,0.2); text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏠</div>
+                            <h4 style="color: #10b981; margin-bottom: 0.5rem;">Langfristige Betreuung</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.8;">Erfahrene Betreuer für Ihre Liegenschaft</p>
+                        </div>
+                        
+                        <div style="background: rgba(59,130,246,0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(59,130,246,0.2); text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+                            <h4 style="color: #3b82f6; margin-bottom: 0.5rem;">Regelmäßige Kontrollen</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.8;">Qualitätssicherung bei jeder Reinigung</p>
+                        </div>
+                        
+                        <div style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(245,158,11,0.2); text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧽</div>
+                            <h4 style="color: #f59e0b; margin-bottom: 0.5rem;">Premium Reinigungsmittel</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.8;">Hochwertige Mittel von renommierten Anbietern</p>
+                        </div>
+                        
+                        <div style="background: rgba(34,197,94,0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(34,197,94,0.2); text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💰</div>
+                            <h4 style="color: #22c55e; margin-bottom: 0.5rem;">Kostenersparnis</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.8;">Konkurrenzlos günstige Preise</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Betreute Immobilien</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">15+</span>
+                            <span class="stat-label">Jahre Erfahrung</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">24/7</span>
+                            <span class="stat-label">Service-Bereitschaft</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">Kundenzufriedenheit</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-visual slide-in-right">
+                    <img src="/services-illustration.jpg" alt="Unser Hausbetreuungs-Team" class="about-image">
+                    <div style="position: absolute; bottom: 1rem; left: 1rem; background: rgba(0,0,0,0.8); color: white; padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+                        <div style="font-weight: 600; color: #10b981;">Professionelle Hausbetreuung</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Ihr vertrauensvoller Partner</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section style="background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%); padding: 6rem 0; position: relative;">
+        <!-- Decorative background -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"2\" fill=\"%23ffffff\" opacity=\"0.1\"/></svg>') repeat; opacity: 0.1;"></div>
+        
+        <div class="section-container" style="position: relative; z-index: 1;">
+            <div class="section-header fade-in" style="text-align: center; margin-bottom: 4rem;">
+                <div style="color: #10b981; font-weight: 600; margin-bottom: 1rem;">Was unsere Kunden sagen</div>
+                <h2 style="color: white; font-size: 2.5rem; margin-bottom: 1rem;">Vertrauen durch Qualität</h2>
+                <p style="color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto;">Stimmen zufriedener Kunden über unsere Hausbetreuungs-Services</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+                <!-- Testimonial 1 -->
+                <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 16px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
+                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; margin-right: 1rem;">M.H.</div>
+                        <div>
+                            <div style="color: white; font-weight: 600;">Mag. Maria Huber</div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Hausverwaltung, Wien</div>
+                        </div>
+                        <div style="margin-left: auto; color: #10b981; font-size: 1.5rem;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.9); font-style: italic; line-height: 1.6;">"Seit Jahren betreut E & B Team unsere Wohnanlage. Die Reinigung ist immer tadellos und der Winterdienst funktioniert reibungslos. Absolute Empfehlung!"</p>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 16px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
+                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; margin-right: 1rem;">T.K.</div>
+                        <div>
+                            <div style="color: white; font-weight: 600;">Thomas Koller</div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Eigentumsgemeinschaft</div>
+                        </div>
+                        <div style="margin-left: auto; color: #10b981; font-size: 1.5rem;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.9); font-style: italic; line-height: 1.6;">"Als Eigentümer schätze ich die Zuverlässigkeit sehr. Das Team ist pünktlich, gründlich und die Kommunikation funktioniert einwandfrei. Top Service!"</p>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 16px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
+                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; margin-right: 1rem;">S.W.</div>
+                        <div>
+                            <div style="color: white; font-weight: 600;">Sandra Wagner</div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Bürogebäude-Verwaltung</div>
+                        </div>
+                        <div style="margin-left: auto; color: #10b981; font-size: 1.5rem;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.9); font-style: italic; line-height: 1.6;">"Professionelle Gebäudereinigung auf höchstem Niveau. Unsere Mieter sind begeistert von der Sauberkeit und wir von der Kosteneffizienz."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+                <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 16px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
+                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; margin-right: 1rem;">A.H.</div>
+                        <div>
+                            <div style="color: white; font-weight: 600;">Anna von Habsburg</div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Schloss-Verwaltung, Österreich</div>
+                        </div>
+                        <div style="margin-left: auto; color: #ffd700; font-size: 1.5rem;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.9); font-style: italic; line-height: 1.6;">"Für unser Familienanwesen vertrauen wir nur Basdogan Elektrotechnik. Ihre Expertise im Umgang mit historischen Immobilien ist unübertroffen."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="section-container">
+            <div class="section-header fade-in" style="text-align: center; margin-bottom: 3rem;">
+                <div style="color: #ffd700; font-weight: 600; margin-bottom: 1rem;">Bereit für Premium-Service?</div>
+                <h2>Lassen Sie uns Ihre Immobilie in ein Technologie-Meisterwerk verwandeln</h2>
+                <p>Kontaktieren Sie uns noch heute für eine exklusive, kostenlose VIP-Beratung. Antwort innerhalb von 2 Stunden garantiert.</p>
+            </div>
+            
+            <div class="contact-container">
+                <div class="contact-info slide-in-left">
+                    <div style="background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,193,7,0.05)); padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 2rem;">
+                        <h3 style="color: #ffd700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-concierge-bell"></i>
+                            VIP-Kontakt
+                        </h3>
+                        <p style="margin-bottom: 1.5rem; opacity: 0.9;">Exklusiver Direktkontakt für Premium-Kunden mit garantierter Antwortzeit.</p>
+                        
+                        <div class="contact-details">
+                            <div class="contact-item" style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <i class="fas fa-phone" style="color: #10b981;"></i>
+                                <div>
+                                    <strong style="color: #10b981;">Telefon</strong><br>
+                                    <a href="tel:06641202413" style="color: white; font-size: 1.1rem; font-weight: 600;">06641202413</a>
+                                    <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.25rem;">Persönliche Beratung</div>
+                                </div>
+                            </div>
+                            <div class="contact-item" style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <i class="fas fa-envelope" style="color: #3b82f6;"></i>
+                                <div>
+                                    <strong style="color: #3b82f6;">E-Mail</strong><br>
+                                    <a href="mailto:info@eb-teamhausbetreuung.at" style="color: white;">info@eb-teamhausbetreuung.at</a>
+                                    <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.25rem;">Schnelle Antwort garantiert</div>
+                                </div>
+                            </div>
+                            <div class="contact-item" style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px;">
+                                <i class="fas fa-map-marker-alt" style="color: #f59e0b;"></i>
+                                <div>
+                                    <strong style="color: #f59e0b;">Standort</strong><br>
+                                    Weiglgasse 14/38<br>1150 Wien, Österreich
+                                    <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.25rem;">Vor-Ort Beratung möglich</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Vertrauenssignale -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏠</div>
+                            <div style="font-size: 0.9rem; font-weight: 600;">Professionell</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">✅</div>
+                            <div style="font-size: 0.9rem; font-weight: 600;">Zuverlässig</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form slide-in-right">
+                    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(20px);">
+                        <h3 style="color: #10b981; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-broom"></i>
+                            Kostenlose Beratung anfragen
+                        </h3>
+                        <p style="margin-bottom: 2rem; opacity: 0.9;">Wie jedes Jahr kommt es in den Wintermonaten immer wieder völlig überraschend zu Schnee- und Eisglätte. Und dann wird guter Rat teuer: Wer muss an welchen Stellen zu welcher Uhrzeit Schneeschippen und streuen? Wollen Sie sich diesen ganzen Stress wirklich noch antun? Vertrauen Sie doch besser einem Partner!</p>
+                        
+                        <form action="#" method="POST">
+                            <div class="form-group">
+                                <label for="name" style="color: #ffd700; font-weight: 600;">Name *</label>
+                                <input type="text" id="name" name="name" required placeholder="Ihr Name" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 1rem; border-radius: 8px; width: 100%;">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="email" style="color: #6366f1; font-weight: 600;">E-Mail *</label>
+                                    <input type="email" id="email" name="email" required placeholder="ihre@email.at" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 1rem; border-radius: 8px; width: 100%;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone" style="color: #10b981; font-weight: 600;">Telefon</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="Ihre Telefonnummer" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 1rem; border-radius: 8px; width: 100%;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="service" style="color: #f59e0b; font-weight: 600;">Gewünschter Service</label>
+                                <select id="service" name="service" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 1rem; border-radius: 8px; width: 100%;">
+                                    <option value="">Bitte wählen Sie...</option>
+                                    <option value="hausbetreuung">Professionelle Hausbetreuung</option>
+                                    <option value="reinigung">Gebäudereinigung</option>
+                                    <option value="winterdienst">Winterdienst</option>
+                                    <option value="gartenpflege">Gartenpflege</option>
+                                    <option value="hausmeister">Hausmeister-Service</option>
+                                    <option value="beratung">Kostenlose Beratung</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="message" style="color: #ef4444; font-weight: 600;">Nachricht *</label>
+                                <textarea id="message" name="message" rows="5" required placeholder="Beschreiben Sie Ihre Immobilie oder Ihre Anfrage..." style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 1rem; border-radius: 8px; width: 100%; resize: vertical;"></textarea>
+                            </div>
+                            <button type="submit" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 700; font-size: 1.1rem; width: 100%; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                <i class="fas fa-broom"></i>
+                                Kostenlose Beratung anfordern
+                            </button>
+                            <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                                📞 Rufen Sie uns an: 06641202413
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="section-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
+                        <img src="/logo-final.svg" alt="E&B Team Hausbetreuung Logo" style="width: 50px; height: 50px; transition: all 0.4s ease; filter: drop-shadow(0 4px 8px rgba(16, 185, 129, 0.3)); padding: 4px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;" onmouseover="this.style.transform='scale(1.2) rotate(10deg)'; this.style.filter='drop-shadow(0 8px 16px rgba(16, 185, 129, 0.5))'" onmouseout="this.style.transform='scale(1) rotate(0deg)'; this.style.filter='drop-shadow(0 4px 8px rgba(16, 185, 129, 0.3))'">
+                        <h3 style="margin: 0;">E & B Team Hausbetreuung</h3>
+                    </div>
+                    <p>Ihr vertrauensvoller Partner für professionelle Hausbetreuung und Facility Management in Wien.</p>
+                    <div style="margin-top: 1rem; color: #10b981; font-weight: 600;">
+                        � Ihr Reinigungsunternehmen seit Jahren
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Unsere Services</h3>
+                    <a href="#services">Hausbetreuung</a><br>
+                    <a href="#services">Winterdienst</a><br>
+                    <a href="#services">Gartenpflege</a><br>
+                    <a href="#services">Hausmeister-Service</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Kontakt</h3>
+                    <p style="color: #10b981;">📞 Telefon: 06641202413</p>
+                    <p style="color: #3b82f6;">✉️ info@eb-teamhausbetreuung.at</p>
+                    <p>📍 Weiglgasse 14/38, 1150 Wien</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Rechtliches</h3>
+                    <a href="/impressum">Impressum</a><br>
+                    <a href="/datenschutz">Datenschutz</a><br>
+                    <a href="/agb">AGB</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 E & B Team Hausbetreuung KG. Alle Rechte vorbehalten. | Ihr Reinigungsunternehmen in Wien</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile navigation toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        navToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animation elements
+        document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Counter animation
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent.replace(/[^\d]/g, ''));
+                const increment = target / 100;
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = counter.textContent.replace(/[\d]/g, '') + target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = counter.textContent.replace(/[\d]/g, '') + Math.floor(current);
+                    }
+                }, 20);
+            });
+        }
+
+        // Trigger counter animation when about section is visible
+        const aboutSection = document.querySelector('.about');
+        const aboutObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    aboutObserver.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        if (aboutSection) {
+            aboutObserver.observe(aboutSection);
+        }
+
+        // Form submission
+        document.querySelector('.contact-form form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Hier würde normalerweise die Form-Daten versendet
+            alert('Vielen Dank für Ihre Nachricht! Wir melden uns schnellstmöglich bei Ihnen.');
+            
+            // Form zurücksetzen
+            this.reset();
+        });
+
+        // Add loading animation
+        window.addEventListener('load', function() {
+            document.body.style.overflow = 'visible';
+        });
+    </script>
+</body>
+</html>
