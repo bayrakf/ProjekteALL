@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Basdogan Elektrotechnik - Login</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .login-container {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      max-width: 400px;
+      width: 100%;
+      padding: 40px;
+      border-radius: 20px;
+      border: 1px solid rgba(240, 192, 64, 0.2);
+      box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(240, 192, 64, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f0c040;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+    
+    .form-group {
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+    
+    .home-link {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .home-link a {
+      color: #f0c040;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .home-link a:hover {
+      color: #fff;
+      text-shadow: 0 0 10px rgba(240, 192, 64, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">Basdogan Elektrotechnik</div>
+    <div class="subtitle">Buchhaltungssystem</div>
+    
+    <% if(error && error.length) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    
+    <form action="/login" method="post">
+      <div class="form-group">
+        <label>Benutzername:</label>
+        <input type="text" name="username" required />
+      </div>
+      
+      <div class="form-group">
+        <label>Passwort:</label>
+        <input type="password" name="password" required />
+      </div>
+      
+      <button type="submit" style="width: 100%; margin-top: 1rem;">Anmelden</button>
+    </form>
+    
+    <div class="home-link">
+      <a href="/">← Zurück zur Homepage</a>
+    </div>
+  </div>
+</body>
+</html>

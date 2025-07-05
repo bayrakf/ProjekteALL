@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Buchhaltung – Übersicht</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    @media (max-width: 900px) {
+      .container { padding: 18px 2vw 18px 2vw; }
+      table { font-size: 0.95rem; }
+      th, td { padding: 6px 4px; }
+    }
+    @media (max-width: 600px) {
+      .container { padding: 6px 0 6px 0; border-radius: 0; }
+      h1, h2 { font-size: 1.2rem; }
+      table { min-width: 700px; font-size: 0.89rem; }
+      .filter-modal-content { padding: 12px 2vw 12px 2vw !important; }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 0; }
+      table { min-width: 500px; }
+      th, td { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width:1200px;margin:auto;">
+    <nav id="main-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-size:1.5rem;font-weight:700;letter-spacing:1px;color:#f0c040;">Basdogan Elektrotechnik</div>
+      <button id="hamburger" aria-label="Menü" style="display:none;background:none;border:none;font-size:2.1rem;cursor:pointer;line-height:1;color:#f0c040;">
+        &#9776;
+      </button>
+      <div id="nav-links" style="display:flex;gap:18px;align-items:center;">
+        <a href="/" style="background:linear-gradient(135deg, #6366f1, #4f46e5);color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;transition:all 0.3s ease;">Zur Landing Page</a>
+        <span style="font-size:1rem;color:#fff;">Angemeldet als <b style="color:#f0c040;"><%= user.username %></b></span>
+        <a href="/logout" style="padding:8px 18px;border-radius:6px;background:linear-gradient(135deg, #ef4444, #dc2626);color:#fff;font-weight:600;text-decoration:none;transition:all 0.3s ease;">Logout</a>
+        <% if(user.username === "admin"){ %>
+          <a href="/users" style="padding:8px 18px;border-radius:6px;background:linear-gradient(135deg, #6366f1, #4f46e5);color:#fff;font-weight:600;text-decoration:none;transition:all 0.3s ease;">Benutzerverwaltung</a>
+        <% } %>
+      </div>
+    </nav>
+
+    <script>
+      // Hamburger-Menü für kleine Bildschirme
+      function toggleNav() {
+        const nav = document.getElementById('nav-links');
+        nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+      }
+      document.getElementById('hamburger').addEventListener('click', toggleNav);
+      function handleResize() {
+        const nav = document.getElementById('nav-links');
+        const burger = document.getElementById('hamburger');
+        if(window.innerWidth < 700) {
+          nav.style.display = 'none';
+          burger.style.display = 'block';
+        } else {
+          nav.style.display = 'flex';
+          burger.style.display = 'none';
+        }
+      }
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('DOMContentLoaded', handleResize);
+    </script>
+
+    <% if(error && error.length) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    <% if(success && success.length) { %>
+      <p class="success"><%= success %></p>
+    <% } %>
+
+    <form action="/backup" method="post" style="margin-bottom:18px;display:flex;align-items:center;gap:12px;background:#e0e7ef;padding:10px 18px;border-radius:8px;max-width:420px;">
+      <button type="submit" style="padding:8px 18px;border-radius:6px;background:#0ea5e9;color:#fff;font-weight:600;cursor:pointer;">Backup jetzt erstellen</button>
+      <span style="font-size:0.95rem;color:#334155;">Automatische tägliche Sicherung um 03:00 Uhr</span>
+    </form>
+
+    <h2>Neuer Eintrag</h2>
+    <form action="/add" method="post" enctype="multipart/form-data">
+      <label>Typ:</label>
+      <select name="typ" required>
+        <option value="Einnahme">Einnahme</option>
+        <option value="Ausgabe">Ausgabe</option>
+      </select>
+      <label>Betrag (€):</label>
+      <input type="number" name="betrag" step="0.01" required />
+      <label>Beschreibung:</label>
+      <input type="text" name="beschreibung" required />
+      <label>Firma:</label>
+      <input type="text" name="firma" required />
+      <label>Kategorie:</label>
+      <select name="kategorie" required>
+        <option value="Allgemein">Allgemein</option>
+        <option value="Miete">Miete</option>
+        <option value="Gehalt">Gehalt</option>
+        <option value="Bürobedarf">Bürobedarf</option>
+        <option value="Reise">Reise</option>
+        <option value="Sonstiges">Sonstiges</option>
+      </select>
+      <label>Tags (Komma-getrennt):</label>
+      <input type="text" name="tags" placeholder="z.B. Steuer, privat" />
+      <label>MwSt (%):</label>
+      <input type="number" name="mwst_satz" value="20" min="0" max="100" step="0.01" required />
+      <label>Wiederkehrend:</label>
+      <select name="wiederkehrend">
+        <option value="">Keine</option>
+        <option value="monatlich">Monatlich</option>
+        <option value="jaehrlich">Jährlich</option>
+      </select>
+      <label>Datum:</label>
+      <input type="date" name="datum" required />
+      <label>Beleg (Foto/PDF):</label>
+      <div id="drop-area" style="border:2px dashed #aaa;padding:10px 0 10px 0;margin-bottom:10px;text-align:center;cursor:pointer;background:#f8fafc;">
+        <span id="drop-text">Datei hierher ziehen oder klicken</span>
+        <input type="file" id="belegInput" name="beleg" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" />
+      </div>
+      <button type="submit">Speichern</button>
+      
+      <script>
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('belegInput');
+        const dropText = document.getElementById('drop-text');
+        dropArea.addEventListener('click', () => fileInput.click());
+        dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.background='#e0e7ef'; });
+        dropArea.addEventListener('dragleave', e => { e.preventDefault(); dropArea.style.background='#f8fafc'; });
+        dropArea.addEventListener('drop', e => {
+          e.preventDefault();
+          dropArea.style.background='#f8fafc';
+          if(e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            dropText.textContent = e.dataTransfer.files[0].name;
+          }
+        });
+        fileInput.addEventListener('change', e => {
+          if(fileInput.files.length) dropText.textContent = fileInput.files[0].name;
+        });
+      </script>
+    </form>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;">Alle Einträge</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button type="button" onclick="openModal('invoice-new-modal')" style="padding:8px 18px;border-radius:6px;background:#6366f1;color:#fff;font-weight:600;box-shadow:0 2px 8px #6366f133;cursor:pointer;">+ Neue Rechnung/Angebot</button>
+        <button type="button" onclick="openModal('invoice-modal')" style="padding:8px 18px;border-radius:6px;background:#0ea5e9;color:#fff;font-weight:600;box-shadow:0 2px 8px #0ea5e933;cursor:pointer;">Rechnungen & Angebote</button>
+        <button type="button" onclick="openModal('filter-modal')" style="padding:8px 18px;border-radius:6px;background:#059669;color:#fff;font-weight:600;box-shadow:0 2px 8px #05966933;cursor:pointer;">Filter & Berichte</button>
+      </div>
+    </div>
+
+    <% if(entries && entries.length) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Typ</th>
+          <th>Betrag (€)</th>
+          <th>Beschreibung</th>
+          <th>Firma</th>
+          <th>Kategorie</th>
+          <th>MwSt (€)</th>
+          <th>Netto (€)</th>
+          <th>Tags</th>
+          <th>Beleg</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% entries.forEach(entry => { %>
+        <tr>
+          <td><%= entry.datum %></td>
+          <td style="color:<%= entry.typ === 'Einnahme' ? '#22c55e' : '#ef4444' %>; font-weight: 600;">
+            <%= entry.typ %>
+          </td>
+          <td style="text-align:right; font-weight: 600; color:<%= entry.typ === 'Einnahme' ? '#22c55e' : '#ef4444' %>;">
+            <%= entry.typ === 'Einnahme' ? '+' : '-' %><%= Number(entry.betrag).toFixed(2) %>
+          </td>
+          <td><%= entry.beschreibung %></td>
+          <td><%= entry.firma %></td>
+          <td><%= entry.kategorie %></td>
+          <td style="text-align:right;"><%= Number(entry.mwst_betrag || 0).toFixed(2) %></td>
+          <td style="text-align:right;"><%= Number(entry.netto_betrag || entry.betrag).toFixed(2) %></td>
+          <td><%= entry.tags || '-' %></td>
+          <td>
+            <% if(entry.beleg_pfad) { %>
+              <a href="/uploads/<%= entry.beleg_pfad %>" target="_blank" style="color:#3b82f6; text-decoration: none;">📎 Anzeigen</a>
+            <% } else { %>
+              -
+            <% } %>
+          </td>
+          <td>
+            <form action="/delete/<%= entry.id %>" method="post" style="display:inline;" onsubmit="return confirm('Eintrag wirklich löschen?')">
+              <button type="submit" style="background:#ef4444; font-size:0.85rem; padding:4px 8px;">Löschen</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+      <p style="color:#888; padding:24px; text-align:center;">Keine Einträge vorhanden.</p>
+    <% } %>
+
+    <!-- Professional Modal System -->
+    <script>
+    class ModalManager {
+      constructor() {
+        this.activeModal = null;
+        this.previousFocus = null;
+        this.modals = new Map();
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.activeModal) {
+            this.closeModal(this.activeModal);
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Tab' && this.activeModal) {
+            this.trapFocus(e);
+          }
+        });
+      }
+
+      openModal(id) {
+        if (this.activeModal) {
+          this.closeModal(this.activeModal);
+        }
+
+        this.previousFocus = document.activeElement;
+        this.activeModal = id;
+
+        const overlay = document.getElementById(`${id}-overlay`);
+        const modalEl = document.getElementById(id);
+
+        if (!overlay || !modalEl) {
+          console.error(`Modal mit ID ${id} nicht gefunden`);
+          return;
+        }
+
+        document.body.classList.add('modal-open');
+        overlay.classList.add('active');
+        modalEl.classList.add('active');
+
+        setTimeout(() => {
+          modalEl.focus();
+        }, 100);
+
+        modalEl.dispatchEvent(new CustomEvent('modal:open', { detail: { modalId: id } }));
+      }
+
+      closeModal(id) {
+        if (this.activeModal !== id) return;
+
+        const overlay = document.getElementById(`${id}-overlay`);
+        const modalEl = document.getElementById(id);
+
+        if (overlay && modalEl) {
+          overlay.classList.remove('active');
+          modalEl.classList.remove('active');
+        }
+
+        document.body.classList.remove('modal-open');
+
+        if (this.previousFocus) {
+          this.previousFocus.focus();
+          this.previousFocus = null;
+        }
+
+        this.activeModal = null;
+
+        if (modalEl) {
+          modalEl.dispatchEvent(new CustomEvent('modal:close', { detail: { modalId: id } }));
+        }
+      }
+
+      trapFocus(e) {
+        if (!this.activeModal) return;
+
+        const modalEl = document.getElementById(this.activeModal);
+        const focusableElements = modalEl.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
+
+      makeDraggable(modalEl, handle) {
+        let isDragging = false;
+        let currentX, currentY, initialX, initialY;
+
+        handle.addEventListener('mousedown', dragStart);
+
+        function dragStart(e) {
+          initialX = e.clientX - modalEl.offsetLeft;
+          initialY = e.clientY - modalEl.offsetTop;
+
+          if (e.target === handle || handle.contains(e.target)) {
+            isDragging = true;
+            modalEl.classList.add('dragging');
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+          }
+        }
+
+        function drag(e) {
+          if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+
+            modalEl.style.left = currentX + 'px';
+            modalEl.style.top = currentY + 'px';
+            modalEl.style.transform = 'none';
+          }
+        }
+
+        function dragEnd() {
+          isDragging = false;
+          modalEl.classList.remove('dragging');
+          document.removeEventListener('mousemove', drag);
+          document.removeEventListener('mouseup', dragEnd);
+        }
+      }
+
+      makeResizable(modalEl, resizer) {
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+          isResizing = true;
+          document.addEventListener('mousemove', resize);
+          document.addEventListener('mouseup', stopResize);
+        });
+
+        function resize(e) {
+          if (!isResizing) return;
+          
+          const rect = modalEl.getBoundingClientRect();
+          const newWidth = e.clientX - rect.left;
+          const newHeight = e.clientY - rect.top;
+
+          if (newWidth > 300) {
+            modalEl.style.width = newWidth + 'px';
+          }
+          if (newHeight > 200) {
+            modalEl.style.height = newHeight + 'px';
+          }
+        }
+
+        function stopResize() {
+          isResizing = false;
+          document.removeEventListener('mousemove', resize);
+          document.removeEventListener('mouseup', stopResize);
+        }
+      }
+    }
+
+    const modalManager = new ModalManager();
+
+    function openModal(id) { 
+      modalManager.openModal(id); 
+    }
+    
+    function closeModal(id) { 
+      modalManager.closeModal(id); 
+    }
+    </script>
+
+    <!-- MODAL: Neue Rechnung/Angebot -->
+    <div class="modal-overlay" id="invoice-new-modal-overlay"></div>
+    <div class="modal draggable resizable" id="invoice-new-modal" role="dialog" aria-modal="true" aria-labelledby="invoice-new-title" tabindex="-1" style="width: 700px; height: 600px;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="invoice-new-title">📄 Neue Rechnung / Angebot erstellen</h3>
+          <button class="modal-close" onclick="closeModal('invoice-new-modal')" aria-label="Modal schließen">&times;</button>
+        </div>
+        <div class="modal-resizer"></div>
+        <div class="modal-body">
+          <form id="invoice-new-form" action="/invoice/new" method="post" onsubmit="return preparePositionen()">
+            <label>Typ:</label>
+            <select name="typ" required>
+              <option value="Rechnung">Rechnung</option>
+              <option value="Angebot">Angebot</option>
+            </select>
+            <label>Empfänger:</label>
+            <input type="text" name="empfaenger" required />
+            <label>Datum:</label>
+            <input type="date" name="datum" value="<%= new Date().toISOString().slice(0,10) %>" required />
+            <label>Fällig bis:</label>
+            <input type="date" name="faellig" />
+            <label>Positionen (Beschreibung, Menge, Einzelpreis):</label>
+            <div id="positionen-list-modal">
+              <div class="position-row">
+                <input type="text" name="pos_beschreibung[]" placeholder="Beschreibung" required style="width:40%" />
+                <input type="number" name="pos_menge[]" placeholder="Menge" min="1" value="1" required style="width:15%" />
+                <input type="number" name="pos_preis[]" placeholder="Einzelpreis" step="0.01" min="0" required style="width:20%" />
+                <button type="button" onclick="removePosModal(this)" style="background:#ef4444; padding:8px 12px; border:none; border-radius:5px; color:#fff; cursor:pointer;">–</button>
+              </div>
+            </div>
+            <input type="hidden" name="positionen" id="positionen-json-modal" />
+            <button type="button" onclick="addPosModal()" style="margin:16px 0;background:linear-gradient(135deg, #10b981, #059669);">+ Position hinzufügen</button>
+            <label>Bemerkung (optional):</label>
+            <textarea name="bemerkung" rows="3"></textarea>
+            <button type="submit" style="margin-top:20px;width:100%;">💾 Rechnung/Angebot speichern</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Rechnungen & Angebote Übersicht -->
+    <div class="modal-overlay" id="invoice-modal-overlay"></div>
+    <div class="modal draggable resizable" id="invoice-modal" role="dialog" aria-modal="true" aria-labelledby="invoice-overview-title" tabindex="-1" style="width: 1000px; height: 700px;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="invoice-overview-title">📊 Rechnungen & Angebote Übersicht</h3>
+          <button class="modal-close" onclick="closeModal('invoice-modal')" aria-label="Modal schließen">&times;</button>
+        </div>
+        <div class="modal-resizer"></div>
+        <div class="modal-body">
+          <div style="display:flex;gap:12px;margin-bottom:20px;">
+            <button id="tab-rechnungen" onclick="showInvoicesTab('rechnung')" class="tab-button active">
+              📋 Rechnungen
+            </button>
+            <button id="tab-angebote" onclick="showInvoicesTab('angebot')" class="tab-button">
+              💼 Angebote
+            </button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table id="invoices-table" class="premium-table" style="min-width:900px;width:100%;">
+              <thead>
+                <tr>
+                  <th>Nr.</th>
+                  <th>Typ</th>
+                  <th>Empfänger</th>
+                  <th>Datum</th>
+                  <th>Fällig</th>
+                  <th>Netto</th>
+                  <th>Brutto</th>
+                  <th>Status</th>
+                  <th>Aktionen</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% let hasInvoices = false, hasOffers = false; %>
+                <% if(invoices && invoices.forEach) { %>
+                  <% invoices.forEach(inv => { if(inv.typ==='Rechnung') hasInvoices=true; if(inv.typ==='Angebot') hasOffers=true; }) %>
+                  <% invoices.forEach(inv => { %>
+                  <tr class="invoice-row" data-typ="<%= inv.typ.toLowerCase() %>">
+                    <td style="font-family:monospace;"><%= inv.rechnungsnummer %></td>
+                    <td><%= inv.typ %></td>
+                    <td><%= inv.empfaenger %></td>
+                    <td><%= inv.datum %></td>
+                    <td><%= inv.faellig %></td>
+                    <td style="text-align:right;"><%= Number(inv.netto).toFixed(2) %></td>
+                    <td style="text-align:right;"><%= Number(inv.brutto).toFixed(2) %></td>
+                    <td>
+                      <% const bgColor = inv.status === 'bezahlt' ? '#22c55e' : (inv.status === 'storniert' ? '#f87171' : '#fde68a') %>
+                      <% const textColor = inv.status === 'bezahlt' ? '#fff' : (inv.status === 'storniert' ? '#fff' : '#b45309') %>
+                      <span style="padding:4px 8px;border-radius:6px;font-weight:600;font-size:0.85rem;background:<%= bgColor %>;color:<%= textColor %>;">
+                        <%= inv.status.charAt(0).toUpperCase() + inv.status.slice(1) %>
+                      </span>
+                    </td>
+                    <td>
+                      <div style="display:flex;gap:6px;align-items:center;justify-content:center;">
+                        <button title="PDF" class="btn-pdf" data-id="<%= inv.id %>" style="background:#3b82f6;border:none;color:#fff;padding:6px 10px;border-radius:5px;font-size:0.85em;cursor:pointer;">PDF</button>
+                        <button title="Bearbeiten" class="btn-edit-invoice" data-id="<%= inv.id %>" style="background:#10b981;border:none;color:#fff;padding:6px 10px;border-radius:5px;font-size:0.85em;cursor:pointer;">Bearbeiten</button>
+                        <button title="Löschen" class="btn-delete-invoice" data-id="<%= inv.id %>" style="background:#ef4444;border:none;color:#fff;padding:6px 10px;border-radius:5px;font-size:0.85em;cursor:pointer;">Löschen</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <% }) %>
+                <% } %>
+              </tbody>
+            </table>
+            <% if(!hasInvoices) { %><div id="no-rechnungen" style="padding:24px;color:#aaa;text-align:center;">Keine Rechnungen vorhanden.</div><% } %>
+            <% if(!hasOffers) { %><div id="no-angebote" style="padding:24px;color:#aaa;text-align:center;display:none;">Keine Angebote vorhanden.</div><% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Filter & Berichte -->
+    <div class="modal-overlay" id="filter-modal-overlay"></div>
+    <div class="modal draggable resizable" id="filter-modal" role="dialog" aria-modal="true" aria-labelledby="filter-title" tabindex="-1" style="width: 800px; height: 600px;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="filter-title">🔍 Filter & Berichte</h3>
+          <button class="modal-close" onclick="closeModal('filter-modal')" aria-label="Modal schließen">&times;</button>
+        </div>
+        <div class="modal-resizer"></div>
+        <div class="modal-body">
+          <form action="/filter" method="get" class="filter-form-group">
+            <div class="filter-form-row">
+              <div class="filter-form-col">
+                <label>Typ:</label>
+                <select name="typ">
+                  <option value="">Alle</option>
+                  <option value="Einnahme">Einnahme</option>
+                  <option value="Ausgabe">Ausgabe</option>
+                </select>
+              </div>
+              <div class="filter-form-col">
+                <label>Kategorie:</label>
+                <select name="kategorie">
+                  <option value="">Alle</option>
+                  <option value="Allgemein">Allgemein</option>
+                  <option value="Miete">Miete</option>
+                  <option value="Gehalt">Gehalt</option>
+                  <option value="Bürobedarf">Bürobedarf</option>
+                  <option value="Reise">Reise</option>
+                  <option value="Sonstiges">Sonstiges</option>
+                </select>
+              </div>
+            </div>
+            <div class="filter-form-row">
+              <div class="filter-form-col">
+                <label>Von Datum:</label>
+                <input type="date" name="von_datum" />
+              </div>
+              <div class="filter-form-col">
+                <label>Bis Datum:</label>
+                <input type="date" name="bis_datum" />
+              </div>
+            </div>
+            <div class="filter-form-row">
+              <div class="filter-form-col">
+                <label>Firma (enthält):</label>
+                <input type="text" name="firma" placeholder="Firma suchen..." />
+              </div>
+              <div class="filter-form-col">
+                <label>Beschreibung (enthält):</label>
+                <input type="text" name="beschreibung" placeholder="Beschreibung suchen..." />
+              </div>
+            </div>
+            <div class="filter-buttons">
+              <button type="submit" class="filter-btn filter-btn-primary">🔍 Filter anwenden</button>
+              <button type="button" onclick="document.querySelector('#filter-modal form').reset()" class="filter-btn filter-btn-secondary">🗑️ Zurücksetzen</button>
+            </div>
+          </form>
+          
+          <hr style="margin: 32px 0; border: 1px solid rgba(255,255,255,0.1);" />
+          
+          <div class="filter-form-group">
+            <h4 style="color: #f0c040; margin-bottom: 16px;">📊 Berichte erstellen</h4>
+            <div class="filter-form-row">
+              <div class="filter-form-col">
+                <form action="/bericht/monat" method="get" style="margin: 0;">
+                  <label>Monatsbericht:</label>
+                  <div style="display: flex; gap: 8px; align-items: end;">
+                    <input type="month" name="monat" required style="flex: 1;" />
+                    <button type="submit" class="filter-btn filter-btn-success">📅 Erstellen</button>
+                  </div>
+                </form>
+              </div>
+              <div class="filter-form-col">
+                <form action="/bericht/jahr" method="get" style="margin: 0;">
+                  <label>Jahresbericht:</label>
+                  <div style="display: flex; gap: 8px; align-items: end;">
+                    <input type="number" name="jahr" min="2020" max="2030" value="<%= new Date().getFullYear() %>" required style="flex: 1;" />
+                    <button type="submit" class="filter-btn filter-btn-warning">📊 Erstellen</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    // Initialisiere Modal-System
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mache Modals draggable und resizable
+      modalManager.makeDraggable(
+        document.getElementById('invoice-new-modal'),
+        document.querySelector('#invoice-new-modal .modal-header')
+      );
+      
+      modalManager.makeResizable(
+        document.getElementById('invoice-new-modal'),
+        document.querySelector('#invoice-new-modal .modal-resizer')
+      );
+
+      modalManager.makeDraggable(
+        document.getElementById('invoice-modal'),
+        document.querySelector('#invoice-modal .modal-header')
+      );
+      
+      modalManager.makeResizable(
+        document.getElementById('invoice-modal'),
+        document.querySelector('#invoice-modal .modal-resizer')
+      );
+
+      modalManager.makeDraggable(
+        document.getElementById('filter-modal'),
+        document.querySelector('#filter-modal .modal-header')
+      );
+      
+      modalManager.makeResizable(
+        document.getElementById('filter-modal'),
+        document.querySelector('#filter-modal .modal-resizer')
+      );
+
+      // Setup Event-Listeners für Overlay-Clicks
+      document.getElementById('invoice-new-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal('invoice-new-modal');
+      });
+
+      document.getElementById('invoice-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal('invoice-modal');
+      });
+
+      document.getElementById('filter-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal('filter-modal');
+      });
+
+      // Setup Rechnungsübersicht
+      setupInvoiceTableActions();
+      showInvoicesTab('rechnung');
+    });
+
+    // Modal-Formular: Positionen dynamisch
+    function addPosModal() {
+      const row = document.createElement('div');
+      row.className = 'position-row';
+      row.innerHTML = `<input type="text" name="pos_beschreibung[]" placeholder="Beschreibung" required style="width:40%" />
+        <input type="number" name="pos_menge[]" placeholder="Menge" min="1" value="1" required style="width:15%" />
+        <input type="number" name="pos_preis[]" placeholder="Einzelpreis" step="0.01" min="0" required style="width:20%" />
+        <button type="button" onclick="removePosModal(this)" style="background:#ef4444; padding:8px 12px; border:none; border-radius:5px; color:#fff; cursor:pointer;">–</button>`;
+      document.getElementById('positionen-list-modal').appendChild(row);
+    }
+
+    function removePosModal(btn) {
+      btn.parentNode.remove();
+    }
+
+    function preparePositionen() {
+      const beschreibungen = Array.from(document.querySelectorAll('#positionen-list-modal [name="pos_beschreibung[]"]')).map(e => e.value.trim());
+      const mengen = Array.from(document.querySelectorAll('#positionen-list-modal [name="pos_menge[]"]')).map(e => e.value);
+      const preise = Array.from(document.querySelectorAll('#positionen-list-modal [name="pos_preis[]"]')).map(e => e.value);
+      const posArr = [];
+      for (let i = 0; i < beschreibungen.length; i++) {
+        if (beschreibungen[i] && mengen[i] && preise[i]) {
+          posArr.push({ beschreibung: beschreibungen[i], menge: mengen[i], preis: preise[i] });
+        }
+      }
+      document.getElementById('positionen-json-modal').value = JSON.stringify(posArr);
+      return true;
+    }
+
+    function showInvoicesTab(tab) {
+      const rows = document.querySelectorAll('.invoice-row');
+      const btnRe = document.getElementById('tab-rechnungen');
+      const btnAn = document.getElementById('tab-angebote');
+      let hasVisible = false;
+      
+      rows.forEach(r => {
+        if(r.dataset.typ === tab) {
+          r.style.display = '';
+          hasVisible = true;
+        } else {
+          r.style.display = 'none';
+        }
+      });
+      
+      const noRechnungen = document.getElementById('no-rechnungen');
+      const noAngebote = document.getElementById('no-angebote');
+      
+      if (noRechnungen) noRechnungen.style.display = (tab==='rechnung' && !hasVisible) ? '' : 'none';
+      if (noAngebote) noAngebote.style.display = (tab==='angebot' && !hasVisible) ? '' : 'none';
+      
+      if (btnRe) btnRe.classList.toggle('active', tab === 'rechnung');
+      if (btnAn) btnAn.classList.toggle('active', tab === 'angebot');
+    }
+
+    // Übersicht im Modal neu laden (AJAX)
+    async function reloadInvoicesTable() {
+      try {
+        const res = await fetch('/invoices/table');
+        if(res.ok) {
+          const html = await res.text();
+          const oldTable = document.getElementById('invoices-table');
+          if (oldTable) {
+            oldTable.outerHTML = html;
+            setupInvoiceTableActions();
+          }
+        }
+      } catch(e) {
+        console.error('Fehler beim Laden der Rechnungstabelle:', e);
+      }
+    }
+
+    // Event-Delegation für PDF- und Bearbeiten-Buttons in der Rechnungs-/Angebotsübersicht
+    let invoiceTableClickHandler = null;
+    function setupInvoiceTableActions() {
+      const table = document.getElementById('invoices-table');
+      if (!table) return;
+      
+      // Vorherigen Handler entfernen, falls vorhanden
+      if (invoiceTableClickHandler) {
+        table.removeEventListener('click', invoiceTableClickHandler);
+      }
+      
+      invoiceTableClickHandler = function(e) {
+        // PDF-Button
+        const pdfBtn = e.target.closest('.btn-pdf');
+        if(pdfBtn) {
+          const id = pdfBtn.getAttribute('data-id');
+          if(id) window.open('/invoice/' + id + '/pdf', '_blank');
+          return;
+        }
+        
+        // Bearbeiten-Button
+        const editBtn = e.target.closest('.btn-edit-invoice');
+        if(editBtn) {
+          const id = editBtn.getAttribute('data-id');
+          if(id && typeof window.editInvoice === 'function') window.editInvoice(id);
+          return;
+        }
+        
+        // Löschen-Button
+        const delBtn = e.target.closest('.btn-delete-invoice');
+        if(delBtn) {
+          const id = delBtn.getAttribute('data-id');
+          const nummer = delBtn.closest('tr').querySelector('td').textContent;
+          if(id && typeof window.deleteInvoice === 'function') window.deleteInvoice(id, nummer);
+          return;
+        }
+      };
+      
+      table.addEventListener('click', invoiceTableClickHandler);
+    }
+
+    // AJAX-Submit für das Modal-Formular Neue Rechnung/Angebot
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('invoice-new-form');
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          if(!preparePositionen()) return;
+          
+          const formData = new FormData(form);
+          const data = {};
+          formData.forEach((v, k) => data[k] = v);
+          
+          try {
+            const res = await fetch('/invoice/new', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            
+            if(res.ok) {
+              // Modal schließen
+              closeModal('invoice-new-modal');
+              form.reset();
+              // Übersicht im Modal aktualisieren
+              await reloadInvoicesTable();
+            } else {
+              const err = await res.text();
+              alert('Fehler beim Speichern: ' + err);
+            }
+          } catch(err) {
+            alert('Fehler beim Speichern: ' + err);
+          }
+        });
+      }
+    });
+    </script>
+
+    <% if(bericht && (isMonatsbericht || isJahresbericht)) { %>
+      <div style="background:#fff;border-radius:10px;box-shadow:0 2px 8px #0001;padding:18px 18px 10px 18px;margin-bottom:22px;overflow-x:auto;">
+        <h3 style="margin-top:0;margin-bottom:10px;">Bericht: <%= isMonatsbericht ? 'Monat' : 'Jahr' %> – Summen nach Kategorie</h3>
+        <table style="min-width:400px;width:100%;background:#f8fafc;border-radius:7px;">
+          <thead>
+            <tr>
+              <th style="padding:7px 12px;">Kategorie</th>
+              <th style="padding:7px 12px;text-align:right;">Einnahmen (€)</th>
+              <th style="padding:7px 12px;text-align:right;">Ausgaben (€)</th>
+              <th style="padding:7px 12px;text-align:right;">Saldo (€)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% Object.keys(bericht).forEach(kat => { %>
+            <tr>
+              <td style="padding:7px 12px;font-weight:600;"><%= kat %></td>
+              <td style="padding:7px 12px;text-align:right;color:#059669;"><%= Number(bericht[kat].einnahmen).toFixed(2) %></td>
+              <td style="padding:7px 12px;text-align:right;color:#dc2626;"><%= Number(bericht[kat].ausgaben).toFixed(2) %></td>
+              <td style="padding:7px 12px;text-align:right;font-weight:600;color:<%= (bericht[kat].einnahmen - bericht[kat].ausgaben) >= 0 ? '#059669' : '#dc2626' %>;"><%= Number(bericht[kat].einnahmen - bericht[kat].ausgaben).toFixed(2) %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+  </div>
+</body>
+</html>
