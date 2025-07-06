@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okey Multi-Tenant Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px; 
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white; 
+            padding: 30px; 
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 1.1rem; }
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            padding: 30px; 
+            background: #f8fafc;
+        }
+        .stat-card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .stat-card h3 { color: #2d3748; margin-bottom: 10px; }
+        .stat-card .number { font-size: 2rem; font-weight: bold; color: #4299e1; }
+        .content { padding: 30px; }
+        .controls { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white; 
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4); }
+        .btn-danger { 
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white; 
+        }
+        .table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .table th { 
+            background: #edf2f7; 
+            padding: 15px; 
+            text-align: left; 
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .table td { 
+            padding: 15px; 
+            border-bottom: 1px solid #e2e8f0; 
+        }
+        .table tr:hover { background: #f7fafc; }
+        .status { 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-size: 0.875rem; 
+            font-weight: 600;
+        }
+        .status.active { background: #c6f6d5; color: #22543d; }
+        .status.inactive { background: #fed7d7; color: #742a2a; }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            width: 90%; 
+            max-width: 500px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .form-group input:focus, .form-group select:focus { 
+            outline: none; 
+            border-color: #4299e1; 
+        }
+        .revenue { 
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 30px;
+        }
+        .revenue h3 { margin-bottom: 10px; }
+        .revenue .amount { font-size: 2.5rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Okey Multi-Tenant Platform</h1>
+            <p>Verwalte deine Okey-Spiel Instanzen</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Aktive Tenants</h3>
+                <div class="number" id="active-count">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Gesamte Spieler</h3>
+                <div class="number" id="total-players">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Monatlicher Umsatz</h3>
+                <div class="number" id="monthly-revenue">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Server Load</h3>
+                <div class="number" id="server-load">-</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="revenue">
+                <h3>💰 Erwarteter Jahresumsatz</h3>
+                <div class="amount" id="yearly-revenue">€ 0</div>
+                <p>Basierend auf aktuellen Tenants</p>
+            </div>
+
+            <div class="controls">
+                <h2>Tenant Management</h2>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    ➕ Neuen Tenant erstellen
+                </button>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Subdomain</th>
+                        <th>Plan</th>
+                        <th>Max. Spieler</th>
+                        <th>Port</th>
+                        <th>Status</th>
+                        <th>Erstellt</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="tenants-table">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 50px; color: #a0aec0;">
+                            Lade Tenants...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Create Tenant Modal -->
+    <div id="create-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎮 Neuen Tenant erstellen</h2>
+            <form id="create-form">
+                <div class="form-group">
+                    <label>Subdomain:</label>
+                    <input type="text" id="subdomain" placeholder="z.B. casino1, poker-lounge" required>
+                    <small>Verfügbar unter: <strong><span id="preview-url">subdomain</span>.deinservice.de</strong></small>
+                </div>
+                <div class="form-group">
+                    <label>Plan:</label>
+                    <select id="plan" required>
+                        <option value="starter">Starter (€19/Monat - 50 Spieler)</option>
+                        <option value="pro">Pro (€49/Monat - 200 Spieler)</option>
+                        <option value="enterprise">Enterprise (€99/Monat - 1000 Spieler)</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Erstellen</button>
+                    <button type="button" class="btn" onclick="closeCreateModal()" style="flex: 1; background: #e2e8f0;">Abbrechen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let tenants = [];
+
+        // Load tenants on page load
+        document.addEventListener('DOMContentLoaded', loadTenants);
+
+        async function loadTenants() {
+            try {
+                const response = await fetch('/api/tenants');
+                tenants = await response.json();
+                renderTenants();
+                updateStats();
+            } catch (error) {
+                console.error('Fehler beim Laden der Tenants:', error);
+            }
+        }
+
+        function renderTenants() {
+            const tbody = document.getElementById('tenants-table');
+            
+            if (tenants.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 50px; color: #a0aec0;">
+                            Noch keine Tenants erstellt. Erstelle deinen ersten Tenant!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = tenants.map(tenant => `
+                <tr>
+                    <td><strong>${tenant.subdomain}</strong></td>
+                    <td><span style="text-transform: capitalize">${tenant.plan}</span></td>
+                    <td>${tenant.max_players}</td>
+                    <td>${tenant.port}</td>
+                    <td><span class="status ${tenant.status}">${tenant.status}</span></td>
+                    <td>${new Date(tenant.created_at).toLocaleDateString('de-DE')}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="openTenant('${tenant.subdomain}')" style="padding: 6px 12px; font-size: 14px;">
+                            🎮 Öffnen
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteTenant(${tenant.id})" style="padding: 6px 12px; font-size: 14px;">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            const activeTenants = tenants.filter(t => t.status === 'active');
+            const totalPlayers = activeTenants.reduce((sum, t) => sum + t.max_players, 0);
+            
+            const planPrices = { starter: 19, pro: 49, enterprise: 99 };
+            const monthlyRevenue = activeTenants.reduce((sum, t) => sum + (planPrices[t.plan] || 0), 0);
+            const yearlyRevenue = monthlyRevenue * 12;
+
+            document.getElementById('active-count').textContent = activeTenants.length;
+            document.getElementById('total-players').textContent = totalPlayers.toLocaleString();
+            document.getElementById('monthly-revenue').textContent = `€${monthlyRevenue}`;
+            document.getElementById('yearly-revenue').textContent = `€ ${yearlyRevenue.toLocaleString()}`;
+            document.getElementById('server-load').textContent = Math.round(activeTenants.length * 15) + '%';
+        }
+
+        function openCreateModal() {
+            document.getElementById('create-modal').style.display = 'block';
+        }
+
+        function closeCreateModal() {
+            document.getElementById('create-modal').style.display = 'none';
+            document.getElementById('create-form').reset();
+        }
+
+        document.getElementById('subdomain').addEventListener('input', function() {
+            document.getElementById('preview-url').textContent = this.value || 'subdomain';
+        });
+
+        document.getElementById('create-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const subdomain = document.getElementById('subdomain').value;
+            const plan = document.getElementById('plan').value;
+
+            try {
+                const response = await fetch('/api/tenants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subdomain, plan })
+                });
+
+                if (response.ok) {
+                    closeCreateModal();
+                    loadTenants();
+                    alert(`✅ Tenant "${subdomain}" erfolgreich erstellt!\n\nZugriff: http://${subdomain}.localhost:3000`);
+                } else {
+                    const error = await response.json();
+                    alert('❌ Fehler: ' + error.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler beim Erstellen: ' + error.message);
+            }
+        });
+
+        function openTenant(subdomain) {
+            window.open(`http://${subdomain}.localhost:3000`, '_blank');
+        }
+
+        async function deleteTenant(id) {
+            if (!confirm('❌ Tenant wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/tenants/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadTenants();
+                    alert('✅ Tenant erfolgreich gelöscht!');
+                } else {
+                    alert('❌ Fehler beim Löschen');
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('create-modal');
+            if (e.target === modal) {
+                closeCreateModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -29,29 +29,35 @@ class OkeyGameClient {
             this.showNotification('Verbindung verloren. Versuche zu reconnecten...', 'error');
         });
 
-        this.socket.on('authenticated', (data) => {
-            console.log('🔐 Authentication response:', data);
-            if (data.success) {
-                this.user = data.user;
-                this.showGameLobby();
-                this.loadRooms();
-                this.showNotification(`Willkommen, ${this.user.username}!`, 'success');
-            } else {
-                this.showNotification(data.message, 'error');
-            }
+        this.socket.on('login_success', (data) => {
+            console.log('🔐 Login successful:', data);
+            this.user = data;
+            this.showGameLobby();
+            this.loadRooms();
+            this.showNotification(`Willkommen, ${data.username}!`, 'success');
         });
 
-        this.socket.on('joinedRoom', (data) => {
-            console.log('🏠 Joined room event received:', data);
-            if (data.success) {
-                this.currentRoom = data.roomId;
-                this.currentTable = data.tableId;
-                this.showGameTable(data.tableInfo);
-                this.updatePlayerList(data.tableInfo.players);
-                this.showNotification(`Erfolgreich Tisch ${data.tableId} beigetreten!`, 'success');
-            } else {
-                this.showNotification(data.message || 'Fehler beim Tisch beitreten', 'error');
-            }
+        this.socket.on('login_error', (data) => {
+            console.log('❌ Login error:', data);
+            this.showNotification(data.message, 'error');
+        });
+
+        this.socket.on('room_joined', (data) => {
+            console.log('🏠 Room joined:', data);
+            this.currentRoom = data.roomId;
+            this.showGameTable(data);
+            this.showNotification(`Raum "${data.roomName}" beigetreten`, 'success');
+        });
+
+        this.socket.on('player_joined', (data) => {
+            console.log('👤 Player joined:', data);
+            this.showNotification(`${data.username} ist dem Raum beigetreten`, 'info');
+        });
+
+        this.socket.on('player_left', (data) => {
+            console.log('👤 Player left:', data);
+            this.showNotification(`${data.username} hat den Raum verlassen`, 'info');
+        });
         });
 
         this.socket.on('error', (data) => {
@@ -89,8 +95,12 @@ class OkeyGameClient {
             this.indicatorTile = data.indicatorTile;
             this.isMyTurn = data.currentPlayer === this.user.id;
             
-            this.startOkeyGame(data);
-            this.showNotification('Authentic Okey Spiel gestartet!', 'success');
+            // Show game interface immediately
+            this.showGameTable();
+            this.renderPlayerHand();
+            this.updateOkeyInfo();
+            
+            this.showNotification('🎮 Okey Spiel gestartet!', 'success');
         });
 
         // Okey-specific socket events
@@ -144,7 +154,7 @@ class OkeyGameClient {
             console.log('🔄 Turn changed event:', data);
             this.updateGameState(data.gameState);
             this.isMyTurn = data.currentPlayerId === this.user.id;
-            this.updateTurnControls();
+            this.updateTurnControls
             
             if (this.isMyTurn) {
                 this.showNotification('Ihr Zug!', 'success');
@@ -401,32 +411,29 @@ class OkeyGameClient {
         
         const guestName = `Gast${Math.floor(Math.random() * 10000)}`;
         
-        // Erstelle Benutzer lokal
+        // Erstelle Benutzer lokal mit genügend Punkten
         this.user = {
             id: Date.now(),
             username: guestName,
             isGuest: true,
-            score: 0
+            score: 1000  // Genügend Punkte für alle Räume
         };
         
         console.log('👤 Guest user created:', this.user);
         
-        // Gehe direkt zur Lobby (ohne auf Socket-Antwort zu warten)
-        this.showGameLobby();
-        this.loadRooms();
-        this.updateHeader();
-        this.showNotification(`Willkommen, ${guestName}!`, 'success');
-        
-        // Versuche Socket-Authentifizierung im Hintergrund
+        // Socket-Authentifizierung SOFORT
         if (this.socket && this.socket.connected) {
-            console.log('📡 Attempting socket authentication...');
-            this.socket.emit('authenticate', {
-                userId: this.user.id,
-                username: this.user.username,
-                isGuest: true
+            console.log('📡 Sending guest authentication...');
+            this.socket.emit('guest-login', {
+                guestName: guestName
             });
         } else {
-            console.log('⚠️ Socket not connected, continuing without server sync');
+            console.log('⚠️ Socket not connected, showing lobby anyway');
+            // Gehe zur Lobby auch wenn Socket nicht verbunden
+            this.showGameLobby();
+            this.loadRooms();
+            this.updateHeader();
+            this.showNotification(`Willkommen, ${guestName}!`, 'success');
         }
     }
 
@@ -482,7 +489,10 @@ class OkeyGameClient {
 
     // Test Functionality - Add demo players for testing
     addDemoPlayers() {
-        if (!this.socket || this.gameState !== 'waiting') return;
+        if (!this.socket || !this.socket.connected) {
+            console.log('⚠️ Socket not connected, cannot add demo players');
+            return;
+        }
         
         console.log('🤖 Adding demo players for testing...');
         
@@ -495,6 +505,7 @@ class OkeyGameClient {
         
         demoPlayers.forEach((demoPlayer, index) => {
             setTimeout(() => {
+                console.log(`🤖 Adding demo player: ${demoPlayer.username}`);
                 this.socket.emit('demoPlayerJoin', demoPlayer);
             }, index * 1000);
         });
@@ -504,20 +515,20 @@ class OkeyGameClient {
     quickStart() {
         console.log('⚡ Quick start initiated');
         
-        // Join as guest and add demo players
+        // Join as guest first
         this.handleGuestLogin();
         
         setTimeout(() => {
-            // Join first available room/table
-            if (this.currentRooms && this.currentRooms.length > 0) {
-                this.joinTable(this.currentRooms[0].id, this.currentRooms[0].tables[0].id);
-                
-                // Add demo players after joining
-                setTimeout(() => {
-                    this.addDemoPlayers();
-                }, 2000);
-            }
-        }, 1000);
+            // Join room1, table1 directly (hardcoded for testing)
+            console.log('🪑 Quick start joining table...');
+            this.joinTable('room1', 'table1');
+            
+            // Add demo players after joining
+            setTimeout(() => {
+                console.log('🤖 Adding demo players...');
+                this.addDemoPlayers();
+            }, 2000);
+        }, 2000); // Increased delay to ensure guest login completes
     }
 
     // Enhanced room loading with better error handling
@@ -889,6 +900,14 @@ class OkeyGameClient {
         if (registerForm) registerForm.style.display = 'none';
     }
     
+    showLoginForm() {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        
+        if (loginForm) loginForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
+    }
+    
     showRegisterForm() {
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
@@ -922,6 +941,38 @@ class OkeyGameClient {
         
         // Update header 
         this.updateHeader();
+    }
+    
+    showLoginScreen() {
+        console.log('🔐 Showing login screen...');
+        
+        const loginScreen = document.getElementById('loginScreen');
+        const roomSelection = document.getElementById('roomSelection');
+        const gameScreen = document.getElementById('gameScreen');
+        
+        if (loginScreen) {
+            loginScreen.style.display = 'flex';
+            loginScreen.classList.remove('hidden');
+            console.log('✅ Login screen shown');
+        }
+        
+        if (roomSelection) {
+            roomSelection.style.display = 'none';
+            roomSelection.classList.add('hidden');
+            console.log('✅ Room selection hidden');
+        }
+        
+        if (gameScreen) {
+            gameScreen.style.display = 'none';
+            gameScreen.classList.add('hidden');
+            console.log('✅ Game screen hidden');
+        }
+        
+        // Hide user profile in header
+        const userProfile = document.getElementById('userProfile');
+        if (userProfile) {
+            userProfile.classList.add('hidden');
+        }
     }
     
     updateHeader() {
@@ -1024,13 +1075,183 @@ class OkeyGameClient {
         this.indicatorTile = gameData.indicatorTile;
         this.isMyTurn = gameData.gameState && gameData.gameState.currentPlayer === this.user.id;
         
+        // Show game interface
+        this.showGameInterface();
+        
         // Update UI
         this.renderPlayerHand();
         this.updateOkeyInfo();
         this.updateTurnControls();
-        this.showGameControls();
         
         this.showNotification('🎮 Okey Spiel gestartet!', 'success');
+    }
+    
+    showGameInterface() {
+        console.log('🎯 Showing game interface...');
+        
+        // Hide all other screens
+        const screens = ['loginForm', 'gameContainer', 'gameArea'];
+        screens.forEach(screenId => {
+            const screen = document.getElementById(screenId);
+            if (screen) {
+                screen.style.display = 'none';
+            }
+        });
+        
+        // Show game area
+        const gameArea = document.getElementById('gameArea');
+        if (gameArea) {
+            gameArea.style.display = 'block';
+            gameArea.classList.add('fade-in');
+        } else {
+            console.error('❌ Game area not found, creating it...');
+            this.createGameInterface();
+        }
+    }
+    
+    createGameInterface() {
+        console.log('🏗️ Creating game interface...');
+        
+        const body = document.body;
+        
+        // Create game area
+        const gameArea = document.createElement('div');
+        gameArea.id = 'gameArea';
+        gameArea.className = 'game-screen';
+        gameArea.innerHTML = `
+            <div class="game-container">
+                <div class="game-header">
+                    <div class="game-info">
+                        <div class="okey-info">
+                            <div id="indicatorTileDisplay" class="indicator-tile">
+                                <strong>Gösterge:</strong> <span class="tile-display">-</span>
+                            </div>
+                            <div id="okeyTileDisplay" class="okey-tile">
+                                <strong>Okey:</strong> <span class="tile-display">-</span>
+                            </div>
+                        </div>
+                        <div class="turn-info">
+                            <div id="currentPlayerTurn" class="current-turn">
+                                <i class="fas fa-clock"></i>
+                                <span>Sıra: -</span>
+                            </div>
+                            <div id="tilesLeft" class="tiles-left">
+                                <i class="fas fa-layer-group"></i>
+                                <span>Kalan: -</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-actions">
+                        <button id="backToLobbyBtn" class="action-btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Lobiye Dön
+                        </button>
+                        <button id="sortHandBtn" class="action-btn btn-sort">
+                            <i class="fas fa-sort"></i>
+                            Sırala
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="game-main">
+                    <div class="game-board">
+                        <div class="center-area">
+                            <div class="middle-pile">
+                                <div id="middlePile" class="pile">
+                                    <div class="pile-card">
+                                        <i class="fas fa-layer-group"></i>
+                                        <span>Orta Yığın</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="discard-area">
+                                <div id="discardPile" class="discard-pile">
+                                    <div class="pile-card empty">
+                                        <i class="fas fa-hand-holding"></i>
+                                        <span>Atılan Taşlar</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="players-area">
+                            <div id="playersDisplay" class="players-grid">
+                                <!-- Players will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hand-area">
+                        <div class="hand-header">
+                            <h3><i class="fas fa-hand-holding"></i> Elinizdeki Taşlar</h3>
+                            <div class="hand-actions">
+                                <button id="drawFromPileBtn" class="action-btn btn-draw" ${this.isMyTurn ? '' : 'disabled'}>
+                                    <i class="fas fa-hand-paper"></i>
+                                    Taş Çek
+                                </button>
+                                <button id="declareWinBtn" class="action-btn btn-win" ${this.isMyTurn ? '' : 'disabled'}>
+                                    <i class="fas fa-trophy"></i>
+                                    Okey!
+                                </button>
+                            </div>
+                        </div>
+                        <div id="handTiles" class="hand-tiles">
+                            <!-- Player's tiles will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        body.appendChild(gameArea);
+        
+        // Setup event listeners
+        this.setupGameEventListeners();
+    }
+    
+    setupGameEventListeners() {
+        console.log('🎯 Setting up game event listeners...');
+        
+        // Back to lobby
+        const backBtn = document.getElementById('backToLobbyBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                this.leaveTable();
+                this.showGameLobby();
+            });
+        }
+        
+        // Sort hand
+        const sortBtn = document.getElementById('sortHandBtn');
+        if (sortBtn) {
+            sortBtn.addEventListener('click', () => {
+                this.sortHand();
+            });
+        }
+        
+        // Draw tile
+        const drawBtn = document.getElementById('drawFromPileBtn');
+        if (drawBtn) {
+            drawBtn.addEventListener('click', () => {
+                if (this.isMyTurn) {
+                    this.drawTile();
+                } else {
+                    this.showNotification('Sizin sıranız değil!', 'warning');
+                }
+            });
+        }
+        
+        // Declare win
+        const winBtn = document.getElementById('declareWinBtn');
+        if (winBtn) {
+            winBtn.addEventListener('click', () => {
+                if (this.isMyTurn) {
+                    this.declareWin();
+                } else {
+                    this.showNotification('Sizin sıranız değil!', 'warning');
+                }
+            });
+        }
     }
     
     updateOkeyInfo() {
@@ -1077,27 +1298,24 @@ class OkeyGameClient {
             hand = currentPlayer ? currentPlayer.hand : null;
         }
         
-        if (!hand) {
+        if (!hand || hand.length === 0) {
             console.log('⚠️ No hand data available, using mock data');
             hand = this.generateMockHand();
             this.playerHand = hand;
         }
 
+        // Clear container
         handTilesContainer.innerHTML = '';
-
-        if (hand.length === 0) {
-            handTilesContainer.innerHTML = '<div class="no-tiles">Keine Steine vorhanden</div>';
-            return;
-        }
-
+        
+        // Render tiles
         hand.forEach((tile, index) => {
             const tileElement = this.createTileElement(tile, index);
             handTilesContainer.appendChild(tileElement);
         });
-
-        console.log('✅ Player hand rendered with', hand.length, 'tiles');
+        
+        console.log(`✅ Rendered ${hand.length} tiles in player hand`);
     }
-
+    
     createTileElement(tile, index) {
         const tileDiv = document.createElement('div');
         tileDiv.className = `tile ${tile.color}`;
@@ -1412,7 +1630,7 @@ class OkeyGameClient {
             this.updateTurnControls();
             
             // Update UI elements
-            this.updateDeckCounter();
+            this.updateDeck
             this.updatePlayerPositions();
         }
     }
@@ -1435,6 +1653,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Make it globally accessible
     window.gameClient = gameClient;
+    
+    // Show login screen initially
+    gameClient.showLoginScreen();
     
     // Check for existing auth token
     const authToken = localStorage.getItem('authToken');

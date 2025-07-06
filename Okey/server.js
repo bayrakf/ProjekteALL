@@ -13,6 +13,18 @@ const DatabaseManager = require('./src/DatabaseManager');
 
 class OkeyServer {
     constructor() {
+        // Tenant-specific configuration
+        this.tenantId = process.env.TENANT_ID || null;
+        this.maxPlayers = parseInt(process.env.MAX_PLAYERS) || 1000;
+        this.dbPath = process.env.DB_PATH || './database.sqlite';
+        this.port = process.env.PORT || 3000;
+        
+        if (this.tenantId) {
+            console.log(`🎮 Starting as Tenant: ${this.tenantId}`);
+            console.log(`👥 Max Players: ${this.maxPlayers}`);
+            console.log(`💾 Database: ${this.dbPath}`);
+        }
+        
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = socketIo(this.server, {
@@ -150,7 +162,21 @@ class OkeyServer {
     
     setupSocketHandlers() {
         this.io.on('connection', (socket) => {
-            console.log(`👤 User connected: ${socket.id}`);
+            // Check tenant player limits
+            if (this.tenantId && this.maxPlayers) {
+                const currentConnections = this.io.engine.clientsCount;
+                if (currentConnections > this.maxPlayers) {
+                    console.log(`❌ Tenant ${this.tenantId}: Player limit reached (${currentConnections}/${this.maxPlayers})`);
+                    socket.emit('error', { 
+                        message: `Server voll! Maximale Spieleranzahl (${this.maxPlayers}) erreicht.`,
+                        code: 'TENANT_LIMIT_REACHED'
+                    });
+                    socket.disconnect();
+                    return;
+                }
+            }
+            
+            console.log(`👤 User connected: ${socket.id}${this.tenantId ? ` [Tenant: ${this.tenantId}]` : ''}`);
             
             // Modern authenticate event (from frontend)
             socket.on('authenticate', (data) => {
@@ -162,7 +188,7 @@ class OkeyServer {
                         id: data.userId || socket.id,
                         username: data.username,
                         isGuest: true,
-                        score: 0,
+                        score: 1000,  // Genügend Punkte für alle Räume
                         avatar: 'guest'
                     };
                     
@@ -203,7 +229,7 @@ class OkeyServer {
                     id: socket.id,
                     username: guestName,
                     isGuest: true,
-                    score: 1000,
+                    score: 1000,  // Genügend Punkte für alle Räume
                     avatar: 'guest'
                 };
                 
@@ -255,14 +281,35 @@ class OkeyServer {
                 }
             });
             
-            // Enhanced socket events for multiplayer
+            // Enhanced socket events for Okey game actions
             socket.on('joinTable', (data) => {
                 console.log('🪑 joinTable event received:', data);
-                console.log('🤔 Current user:', this.activeUsers.get(socket.id));
+                const user = this.activeUsers.get(socket.id);
+                
+                if (!user) {
+                    console.log('❌ User not authenticated for socket:', socket.id);
+                    socket.emit('error', { message: 'User not authenticated' });
+                    return;
+                }
+                
+                console.log('👤 User attempting to join room:', user);
                 
                 try {
-                    const result = this.gameManager.joinTable(socket, data);
-                    console.log('✅ joinTable result:', result ? 'success' : 'failed');
+                    const result = this.gameManager.joinRoom(socket, user, 'okey', data.roomId);
+                    console.log('🎯 joinRoom result:', result);
+                    
+                    if (result.success) {
+                        console.log('✅ Successfully joined room');
+                        socket.emit('joinedRoom', {
+                            success: true,
+                            roomId: data.roomId,
+                            tableId: 'auto-assigned',
+                            tableInfo: result.room
+                        });
+                    } else {
+                        console.log('❌ Failed to join room:', result.error);
+                        socket.emit('error', { message: result.error });
+                    }
                 } catch (error) {
                     console.error('❌ joinTable error:', error);
                     socket.emit('error', { message: 'Fehler beim Tisch beitreten: ' + error.message });
@@ -271,95 +318,65 @@ class OkeyServer {
             
             socket.on('leaveTable', (data) => {
                 console.log('🚪 leaveTable event received:', data);
-                this.gameManager.leaveTable(socket, data);
+                this.gameManager.leaveRoom(socket.id);
             });
             
             socket.on('chatMessage', (data) => {
                 console.log('💬 chatMessage event received:', data);
-                this.gameManager.handleChatMessage(socket, data);
-            });
-            
-            socket.on('startGame', (data) => {
-                console.log('🎮 startGame event received:', data);
-                const { tableId } = data;
+                // Simple chat implementation
                 const user = this.activeUsers.get(socket.id);
-                
-                // Generate authentic Okey game data
-                const gameData = this.generateOkeyGameData(tableId);
-                
-                this.io.to(`table_${tableId}`).emit('gameStarted', {
-                    message: 'Spiel gestartet!',
-                    gameState: gameData.gameState,
-                    playerHands: gameData.playerHands,
-                    okeyTile: gameData.okeyTile,
-                    indicatorTile: gameData.indicatorTile,
-                    currentPlayer: gameData.gameState.currentPlayer,
-                    scores: gameData.scores
-                });
+                if (user) {
+                    const roomId = this.gameManager.userRooms.get(socket.id);
+                    if (roomId) {
+                        this.io.to(roomId).emit('chatMessage', {
+                            username: user.username,
+                            message: data.message,
+                            timestamp: new Date()
+                        });
+                    }
+                }
             });
             
+            // Okey Game Actions
             socket.on('drawTile', (data) => {
                 console.log('🎲 drawTile event received:', data);
-                // TODO: Implement real tile drawing logic
-                const { tableId, userId } = data;
-                const mockTile = {
-                    id: `tile_${Date.now()}`,
-                    number: Math.floor(Math.random() * 13) + 1,
-                    color: ['red', 'black', 'blue', 'green'][Math.floor(Math.random() * 4)],
-                    isOkey: false
-                };
+                const user = this.activeUsers.get(socket.id);
+                if (!user) {
+                    socket.emit('error', { message: 'User not authenticated' });
+                    return;
+                }
                 
-                this.io.to(`table_${tableId}`).emit('tileDrawn', {
-                    userId: userId,
-                    tile: mockTile,
-                    gameState: {
-                        currentPlayer: userId,
-                        round: 1,
-                        tilesLeft: 105
-                    }
+                this.gameManager.handleGameAction(socket, user, {
+                    action: 'drawTile',
+                    ...data
                 });
             });
             
             socket.on('discardTile', (data) => {
                 console.log('🗑️ discardTile event received:', data);
-                const { tableId, userId, tile } = data;
+                const user = this.activeUsers.get(socket.id);
+                if (!user) {
+                    socket.emit('error', { message: 'User not authenticated' });
+                    return;
+                }
                 
-                this.io.to(`table_${tableId}`).emit('tileDiscarded', {
-                    userId: userId,
-                    tile: tile,
-                    username: this.activeUsers.get(socket.id)?.username || 'Unknown',
-                    gameState: {
-                        currentPlayer: userId,
-                        round: 1,
-                        tilesLeft: 106
-                    }
-                });
-            });
-            
-            socket.on('finishTurn', (data) => {
-                console.log('✅ finishTurn event received:', data);
-                const { tableId, userId } = data;
-                
-                // Mock: Switch to next player
-                this.io.to(`table_${tableId}`).emit('turnChanged', {
-                    gameState: {
-                        currentPlayer: 'next_player_id', // TODO: Implement proper turn logic
-                        round: 1,
-                        tilesLeft: 106
-                    },
-                    currentPlayerName: 'Nächster Spieler'
+                this.gameManager.handleGameAction(socket, user, {
+                    action: 'discardTile',
+                    ...data
                 });
             });
             
             socket.on('declareWin', (data) => {
                 console.log('🏆 declareWin event received:', data);
-                const { tableId, userId, hand } = data;
                 const user = this.activeUsers.get(socket.id);
+                if (!user) {
+                    socket.emit('error', { message: 'User not authenticated' });
+                    return;
+                }
                 
-                this.io.to(`table_${tableId}`).emit('gameEnded', {
-                    winner: user?.username || 'Unknown',
-                    reason: 'okey',
-                    scores: { [userId]: 100 } // Mock scoring
+                this.gameManager.handleGameAction(socket, user, {
+                    action: 'declareWin',
+                    ...data
                 });
             });
 
@@ -382,14 +399,43 @@ class OkeyServer {
 
             socket.on('demoPlayerJoin', (demoPlayer) => {
                 console.log('🤖 Demo player join:', demoPlayer);
+                
                 // Add demo player to active users for testing
                 const demoSocketId = `demo_${demoPlayer.id}`;
                 this.activeUsers.set(demoSocketId, demoPlayer);
                 
-                // Simulate demo player joining current room
-                const userRoom = this.gameManager.getUserRoom(socket.id);
-                if (userRoom) {
-                    this.gameManager.joinRoom({ id: demoSocketId, join: () => {} }, demoPlayer, 'okey', userRoom.id);
+                // Simulate demo player joining current user's table
+                const user = this.activeUsers.get(socket.id);
+                if (user) {
+                    const userRoom = this.gameManager.getUserRoom(socket.id);
+                    const userTable = this.gameManager.getUserTable(socket.id);
+                    
+                    console.log(`🤖 Demo player joining room: ${userRoom?.id}, table: ${userTable?.id}`);
+                    
+                    if (userRoom && userTable) {
+                        // Create mock socket for demo player
+                        const demoSocket = { 
+                            id: demoSocketId, 
+                            join: () => {},
+                            emit: () => {}
+                        };
+                        
+                        const result = this.gameManager.assignPlayerToTable(userRoom, demoSocketId, demoPlayer);
+                        console.log(`🤖 Demo player join result:`, result);
+                        
+                        if (result.success) {
+                            // Notify all players in the table
+                            socket.to(`table_${userTable.id}`).emit('playerJoined', {
+                                player: demoPlayer,
+                                tableInfo: result.table
+                            });
+                            
+                            socket.emit('playerJoined', {
+                                player: demoPlayer,
+                                tableInfo: result.table
+                            });
+                        }
+                    }
                 }
             });
 
@@ -416,10 +462,9 @@ class OkeyServer {
     }
     
     start() {
-        const PORT = process.env.PORT || 3000;
-        this.server.listen(PORT, () => {
-            console.log(`🚀 Okey Nostalji Server running on port ${PORT}`);
-            console.log(`🌐 Open http://localhost:${PORT} to play!`);
+        this.server.listen(this.port, () => {
+            console.log(`🚀 Okey Nostalji Server running on port ${this.port}`);
+            console.log(`🌐 Open http://localhost:${this.port} to play!`);
         });
     }
     

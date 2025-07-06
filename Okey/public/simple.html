@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okey - Debug Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .room-card {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #fff;
+        }
+        .room-card:hover {
+            background: #f0f8ff;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            background: #ffe7e7;
+            border-left-color: #dc3545;
+        }
+        .success {
+            background: #e7ffe7;
+            border-left-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Okey Nostalji - Debug Version</h1>
+        
+        <div class="status" id="connectionStatus">
+            🔌 Verbindung wird aufgebaut...
+        </div>
+        
+        <div>
+            <button class="btn" onclick="loadRooms()">🔄 Räume laden</button>
+            <button class="btn" onclick="testConnection()">🧪 Verbindung testen</button>
+            <button class="btn" onclick="clearLog()">🗑️ Log löschen</button>
+        </div>
+        
+        <h2>📋 Verfügbare Räume</h2>
+        <div id="roomsList">
+            <p>Räume werden geladen...</p>
+        </div>
+        
+        <h2>📝 Debug Log</h2>
+        <div id="debugLog" style="background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+        </div>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <script>
+        let socket;
+        let user = null;
+        
+        function log(message) {
+            const debugLog = document.getElementById('debugLog');
+            const time = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `[${time}] ${message}<br>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '';
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('connectionStatus');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        async function loadRooms() {
+            log('🏠 Lade Räume...');
+            try {
+                const response = await fetch('/api/rooms');
+                const rooms = await response.json();
+                log(`✅ ${rooms.length} Räume erhalten`);
+                
+                const roomsList = document.getElementById('roomsList');
+                if (rooms.length === 0) {
+                    roomsList.innerHTML = '<p>❌ Keine Räume verfügbar</p>';
+                    return;
+                }
+                
+                roomsList.innerHTML = rooms.map(room => `
+                    <div class="room-card" onclick="joinRoom('${room.id}')">
+                        <h3>${room.name}</h3>
+                        <p>👥 ${room.currentPlayers}/${room.maxPlayers} Spieler</p>
+                        <p>Status: ${room.canJoin ? '✅ Verfügbar' : '❌ Voll'}</p>
+                    </div>
+                `).join('');
+                
+                log('✅ Räume angezeigt');
+                
+            } catch (error) {
+                log(`❌ Fehler beim Laden der Räume: ${error.message}`);
+                document.getElementById('roomsList').innerHTML = `<p class="error">Fehler: ${error.message}</p>`;
+            }
+        }
+        
+        function joinRoom(roomId) {
+            log(`🏠 Trete Raum bei: ${roomId}`);
+            
+            if (!user) {
+                // Auto-Login als Gast
+                const username = 'Gast_' + Math.floor(Math.random() * 10000);
+                log(`🔐 Auto-Login als: ${username}`);
+                socket.emit('guest_login', { username, pendingRoom: roomId });
+            } else {
+                socket.emit('join_room', { roomId });
+            }
+        }
+        
+        function testConnection() {
+            log('🧪 Teste Verbindung...');
+            if (socket && socket.connected) {
+                log('✅ Socket verbunden');
+                updateStatus('✅ Verbunden', 'success');
+            } else {
+                log('❌ Socket nicht verbunden');
+                updateStatus('❌ Nicht verbunden', 'error');
+                initSocket();
+            }
+        }
+        
+        function initSocket() {
+            log('🔌 Initialisiere Socket.IO...');
+            
+            socket = io();
+            
+            socket.on('connect', () => {
+                log(`✅ Socket verbunden: ${socket.id}`);
+                updateStatus('✅ Verbunden', 'success');
+            });
+            
+            socket.on('disconnect', () => {
+                log('❌ Socket getrennt');
+                updateStatus('❌ Verbindung verloren', 'error');
+            });
+            
+            socket.on('login_success', (data) => {
+                log(`✅ Login erfolgreich: ${data.username}`);
+                user = data;
+                updateStatus(`✅ Angemeldet als ${data.username}`, 'success');
+                
+                // Falls ein Room-Beitritt ausstehend ist
+                if (data.pendingRoom) {
+                    socket.emit('join_room', { roomId: data.pendingRoom });
+                }
+            });
+            
+            socket.on('login_error', (data) => {
+                log(`❌ Login Fehler: ${data.message}`);
+                updateStatus('❌ Login fehlgeschlagen', 'error');
+            });
+            
+            socket.on('room_joined', (data) => {
+                log(`✅ Raum beigetreten: ${data.roomName}`);
+                updateStatus(`✅ Im Raum: ${data.roomName}`, 'success');
+                
+                // Zeige Spiel-Interface (vereinfacht)
+                document.getElementById('roomsList').innerHTML = `
+                    <div style="background: #e7ffe7; padding: 20px; border-radius: 5px; text-align: center;">
+                        <h2>🎮 Im Spiel</h2>
+                        <p><strong>Raum:</strong> ${data.roomName}</p>
+                        <p><strong>Spieler:</strong> ${data.players?.length || 0}/4</p>
+                        <button class="btn" onclick="leaveRoom()">🚪 Raum verlassen</button>
+                    </div>
+                `;
+            });
+            
+            socket.on('error', (error) => {
+                log(`❌ Socket Fehler: ${error.message}`);
+            });
+        }
+        
+        function leaveRoom() {
+            log('🚪 Verlasse Raum...');
+            socket.emit('leave_room');
+            loadRooms();
+        }
+        
+        // Initialisierung beim Laden der Seite
+        window.onload = () => {
+            log('🚀 Seite geladen');
+            initSocket();
+            
+            // Räume nach kurzer Verzögerung laden
+            setTimeout(() => {
+                loadRooms();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

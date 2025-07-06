@@ -131,6 +131,13 @@ class GameManager {
                     ready: false
                 });
                 
+                // Join socket to table room for game events
+                const socket = this.io.sockets.sockets.get(socketId);
+                if (socket) {
+                    socket.join(tableId);
+                    console.log(`🪑 Player ${user.username} joined table room: ${tableId}`);
+                }
+                
                 // Start game if 4 players
                 if (table.players.length === 4) {
                     this.startGame(room, tableId);
@@ -141,7 +148,11 @@ class GameManager {
                     table: this.getTableInfo(table)
                 });
                 
-                return;
+                return {
+                    success: true,
+                    tableId: tableId,
+                    table: this.getTableInfo(table)
+                };
             }
         }
         
@@ -161,10 +172,23 @@ class GameManager {
         
         room.tables.set(tableId, table);
         
+        // Join socket to table room for game events
+        const socket = this.io.sockets.sockets.get(socketId);
+        if (socket) {
+            socket.join(tableId);
+            console.log(`🪑 Player ${user.username} created and joined table room: ${tableId}`);
+        }
+        
         this.io.to(room.id).emit('table-created', {
             tableId: tableId,
             table: this.getTableInfo(table)
         });
+        
+        return {
+            success: true,
+            tableId: tableId,
+            table: this.getTableInfo(table)
+        };
     }
     
     removePlayerFromTable(room, tableId, socketId) {
@@ -176,7 +200,7 @@ class GameManager {
         
         // If game was running, end it
         if (table.game && table.status === 'playing') {
-            table.game.handlePlayerDisconnect(socketId);
+            // Handle player disconnect in game
             table.status = 'finished';
         }
         
@@ -196,27 +220,83 @@ class GameManager {
         const table = room.tables.get(tableId);
         if (!table || table.players.length !== 4) return;
         
-        // Create new Okey game
-        table.game = new OkeyGame(table.players, this.io, room.id);
+        // Prepare players array for OkeyGame
+        const gamePlayers = table.players.map(p => ({
+            id: p.user.id,
+            username: p.user.username,
+            socketId: p.socketId,
+            score: p.user.score || 0
+        }));
+        
+        // Create new Okey game with correct parameters
+        table.game = new OkeyGame(tableId, gamePlayers, this.io);
         table.status = 'playing';
         
         // Start the game
-        table.game.startGame();
-        
-        console.log(`🎮 Game started at table ${tableId} in room ${room.name}`);
+        try {
+            table.game.startGame();
+            console.log(`🎮 Okey game started at table ${tableId} in room ${room.name}`);
+            
+            // Notify players that game started
+            for (const player of table.players) {
+                this.io.to(player.socketId).emit('joinedRoom', {
+                    success: true,
+                    roomId: room.id,
+                    tableId: tableId,
+                    tableInfo: this.getTableInfo(table)
+                });
+            }
+        } catch (error) {
+            console.error(`❌ Failed to start game at table ${tableId}:`, error);
+            table.status = 'waiting';
+        }
     }
     
     handleGameAction(socket, user, data) {
         const roomId = this.userRooms.get(socket.id);
-        if (!roomId) return;
+        if (!roomId) {
+            socket.emit('error', { message: 'Not in a room' });
+            return;
+        }
         
         const room = this.rooms.get(roomId);
-        if (!room) return;
+        if (!room) {
+            socket.emit('error', { message: 'Room not found' });
+            return;
+        }
         
         // Find player's table
         for (const [tableId, table] of room.tables) {
             if (table.game && table.players.some(p => p.socketId === socket.id)) {
-                table.game.handlePlayerAction(socket.id, data);
+                const game = table.game;
+                
+                switch (data.action) {
+                    case 'drawTile':
+                        const drawResult = game.drawTile(user.id);
+                        if (!drawResult.success) {
+                            socket.emit('error', { message: drawResult.error });
+                        }
+                        break;
+                        
+                    case 'discardTile':
+                        const discardResult = game.discardTile(user.id, data.tileId);
+                        if (!discardResult.success) {
+                            socket.emit('error', { message: discardResult.error });
+                        }
+                        break;
+                        
+                    case 'declareWin':
+                        // Check if player actually has a winning hand
+                        if (game.checkWinCondition(user.id)) {
+                            game.endGame(user.id);
+                        } else {
+                            socket.emit('error', { message: 'Invalid win declaration' });
+                        }
+                        break;
+                        
+                    default:
+                        socket.emit('error', { message: 'Unknown game action' });
+                }
                 break;
             }
         }
@@ -231,6 +311,19 @@ class GameManager {
         return roomId ? this.rooms.get(roomId) : null;
     }
     
+    getUserTable(socketId) {
+        const room = this.getUserRoom(socketId);
+        if (!room) return null;
+        
+        // Find the table containing this player
+        for (const [tableId, table] of room.tables) {
+            if (table.players.some(p => p.socketId === socketId)) {
+                return table;
+            }
+        }
+        return null;
+    }
+    
     getRoomsInfo() {
         const roomsInfo = [];
         
@@ -242,10 +335,10 @@ class GameManager {
             for (const [tableId, table] of room.tables) {
                 tables.push({
                     id: tableId,
-                    players: Array.from(table.players.values()).map(p => ({
-                        name: p.username,
-                        id: p.id,
-                        score: p.score
+                    players: table.players.map(p => ({
+                        name: p.user.username,
+                        id: p.user.id,
+                        score: p.user.score
                     }))
                 });
             }
@@ -298,147 +391,14 @@ class GameManager {
     getTableInfo(table) {
         return {
             players: table.players.map(p => ({
+                socketId: p.socketId,
                 username: p.user.username,
                 score: p.user.score,
-                ready: p.ready,
-                isGuest: p.user.isGuest
+                ready: p.ready
             })),
             status: table.status,
             gameInfo: table.game ? table.game.getGameInfo() : null
         };
-    }
-    
-    joinTable(socket, data) {
-        console.log('🪑 GameManager joinTable called with:', data);
-        
-        const { roomId, tableId } = data;
-        const user = socket.user || this.getUserFromSocket(socket);
-        
-        if (!user) {
-            socket.emit('error', { message: 'User not found' });
-            return { success: false, error: 'User not found' };
-        }
-
-        const room = this.rooms.get(roomId);
-        if (!room) {
-            socket.emit('error', { message: 'Room not found' });
-            return { success: false, error: 'Room not found' };
-        }
-
-        // Get or create table
-        let table = room.tables.get(tableId);
-        if (!table) {
-            table = {
-                id: tableId,
-                players: [],
-                game: null,
-                status: 'waiting',
-                createdAt: new Date()
-            };
-            room.tables.set(tableId, table);
-        }
-
-        // Check if table is full
-        if (table.players.length >= 4) {
-            socket.emit('error', { message: 'Table is full' });
-            return { success: false, error: 'Table is full' };
-        }
-
-        // Remove user from previous table
-        this.leaveRoom(socket.id);
-
-        // Add user to room and table
-        room.players.set(socket.id, user);
-        this.userRooms.set(socket.id, roomId);
-
-        table.players.push({
-            socketId: socket.id,
-            user: user,
-            ready: false
-        });
-
-        // Join socket room
-        socket.join(roomId);
-        socket.join(`table_${tableId}`);
-
-        // Notify player they joined
-        socket.emit('joinedRoom', {
-            success: true,
-            roomId: roomId,
-            tableId: tableId,
-            tableInfo: this.getTableInfo(table)
-        });
-
-        // Notify other players
-        socket.to(`table_${tableId}`).emit('playerJoined', {
-            player: user,
-            tableInfo: this.getTableInfo(table)
-        });
-
-        console.log(`✅ ${user.username} joined table ${tableId} in room ${roomId}`);
-
-        // Start game if 4 players
-        if (table.players.length === 4) {
-            console.log('🎮 4 players reached, starting game...');
-            this.startGame(room, tableId);
-        }
-
-        return { success: true, room: this.getRoomInfo(room) };
-    }
-
-    getUserFromSocket(socket) {
-        // Try to get user from active users map (set by server)
-        return socket.user || null;
-    }
-
-    leaveTable(socket, data) {
-        const roomId = this.userRooms.get(socket.id);
-        if (!roomId) return;
-
-        const room = this.rooms.get(roomId);
-        if (!room) return;
-
-        // Find and remove from table
-        for (const [tableId, table] of room.tables) {
-            if (table.players.some(p => p.socketId === socket.id)) {
-                this.removePlayerFromTable(room, tableId, socket.id);
-                break;
-            }
-        }
-    }
-    
-    broadcastRoomUpdate(roomId) {
-        const room = this.rooms.get(roomId);
-        if (!room) return;
-        
-        // Create updated rooms list for lobby
-        const roomsInfo = this.getRoomsInfo();
-        
-        // Broadcast to all clients not at a table
-        this.io.emit('roomUpdate', {
-            rooms: roomsInfo
-        });
-    }
-    
-    handleChatMessage(socket, data) {
-        const { tableId, message, userId, username } = data;
-        
-        if (!tableId || !message || !username) {
-            socket.emit('error', { message: 'Unvollständige Chat-Nachricht' });
-            return;
-        }
-        
-        console.log(`💬 Chat message from ${username} at table ${tableId}: ${message}`);
-        
-        // Broadcast to all players at the table
-        const chatData = {
-            username: username,
-            message: message,
-            timestamp: new Date(),
-            userId: userId
-        };
-        
-        this.io.to(`table_${tableId}`).emit('chatMessage', chatData);
     }
 }
 

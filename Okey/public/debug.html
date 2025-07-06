@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Debug</title>
+</head>
+<body>
+    <h1>Debug Frontend</h1>
+    <p>Öffne die Konsole um Debug-Informationen zu sehen</p>
+    
+    <button onclick="testAPI()">Teste API</button>
+    <button onclick="testRoomsLoad()">Teste Rooms Load</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            console.log('🧪 Teste API...');
+            try {
+                const response = await fetch('http://localhost:3000/api/rooms');
+                const rooms = await response.json();
+                console.log('📋 API Antwort:', rooms);
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(rooms, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('❌ API Fehler:', error);
+                document.getElementById('results').innerHTML = '<p style="color: red;">Fehler: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testRoomsLoad() {
+            console.log('🏠 Teste Room Loading...');
+            
+            // Simuliere den Hauptseiten-Load
+            try {
+                const response = await fetch('http://localhost:3000/');
+                const html = await response.text();
+                
+                // Suche nach roomsGrid
+                if (html.includes('roomsGrid')) {
+                    console.log('✅ roomsGrid gefunden im HTML');
+                } else {
+                    console.log('❌ roomsGrid NICHT gefunden im HTML');
+                }
+                
+                // Prüfe ob game-simple.js geladen wird
+                if (html.includes('game-simple.js')) {
+                    console.log('✅ game-simple.js wird geladen');
+                } else {
+                    console.log('❌ game-simple.js wird NICHT geladen');
+                }
+                
+                // Simuliere loadRooms
+                const roomsResponse = await fetch('http://localhost:3000/api/rooms');
+                const rooms = await roomsResponse.json();
+                
+                console.log('📊 Simuliere displayRooms mit', rooms.length, 'Räumen');
+                
+                // Simuliere HTML generation
+                const roomsHTML = rooms.map(room => `
+                    <div class="room-card">
+                        <h3>${room.name}</h3>
+                        <p>${room.currentPlayers}/${room.maxPlayers} Spieler</p>
+                    </div>
+                `).join('');
+                
+                document.getElementById('results').innerHTML = `
+                    <h3>Simulierte Räume:</h3>
+                    <div style="display: grid; gap: 10px;">
+                        ${roomsHTML}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Test Fehler:', error);
+            }
+        }
+        
+        // Auto-test beim Laden
+        window.onload = () => {
+            console.log('🚀 Debug-Seite geladen');
+            testAPI();
+        };
+    </script>
+</body>
+</html>
